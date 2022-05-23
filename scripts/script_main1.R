@@ -142,7 +142,7 @@ main1_sub <- main1_sub %>% # create new variable "selfcat"
     orgaeff = (orgaeff_1 + orgaeff_2)/2
   )
 
-## competence stereotype (reliability and variable generation)
+## competence stereotype (reliability and variable generation)----
 
 interitem_stereo <- main1_sub[, c("stereo_1", "stereo_2")]
 item_intercor(interitem_stereo) # inter-item correlation of 0.85
@@ -152,7 +152,7 @@ main1_sub <- main1_sub %>% # create new variable "selfcat"
     stereo = (stereo_1 + stereo_2)/2
   )
 
-## legitimacy (reliablity, validty and variable generation)
+## legitimacy (reliablity, validty and variable generation) ----
 
 library(psych) # cronbach's alpha
 
@@ -161,6 +161,11 @@ key <- list(
 )
 
 score.items(key, main1_sub) # reliability of 0.87
+
+main1_sub <- main1_sub %>% # create new variable "selfcat"
+  mutate(
+    legit = (legit_1 + legit_2 + legit_3)/3
+  )
 
 library(lavaan) # validity
 library(semPlot)
@@ -176,10 +181,9 @@ lavaan::summary(cfa_legit.sem, standardized = TRUE, fit.measures = TRUE)
 # --> can we observe differences in predictions based on condition (i.e., theoretically, individuals in control group should rate the
 # the group as legitimate, whereas individuals in the exp conditions should not/ to a lesser degree)
 
-## self-categorization (normality)
+## self-categorization (normality) ----
 
-
-hist(main1_sub$selfcat) # normality
+hist(main1_sub$selfcat) 
 describe(main1_sub$selfcat) # # in the range of normality (skew: 0.01; kurtosis: -0.58), but visually slightly negatively skewed
 
 main_left <- main1_sub %>% # subgroup political affiliation = left
@@ -224,10 +228,54 @@ main_exp2 <- main1_sub %>% # subgroup condition = experimental condition 2
 hist(main_exp2$selfcat) # positively skewed
 describe(main_exp2$selfcat) # in the range of normality
 
+## organizational efficacy (normality)----
 
+hist(main_control$orgaeff) # slightly negatively skewed
+describe(main_control$orgaeff) # slight positive kurtosis (1.24)
 
-hist(main_left$orgaeff) # even distribution of low, medium and high values
-describe(main_left$orgaeff) # in the range of normality
+hist(main_exp1$orgaeff) # positive skew
+describe(main_exp1$orgaeff) # in the range of normality
+
+hist(main_exp2$orgaeff) # positive skew (slightly more higher scores than in exp1)
+describe(main_exp2$orgaeff) # slight negative kurtosis (-1.08) 
+
+## competence stereotype (normality)----
+
+hist(main_control$stereo) # negative skew due to strong positive peak at around 4
+describe(main_control$stereo) # in the range of normality
+
+hist(main_exp1$stereo) # positive skew
+describe(main_exp1$stereo) # in the range of normality
+
+hist(main_exp2$stereo) # positive skew but more higher scores than in exp1
+describe(main_exp2$stereo) # in the range of normality
+
+## legitimacy (normality)----
+
+hist(main_control$legit) # negative skew 
+describe(main_control$legit) # in the range of normality
+
+hist(main_exp1$legit) # slight negative skew!!!!! no max. of 7
+describe(main_exp1$legit) # in the range of normality
+
+hist(main_exp2$legit) # rather positively skewed
+describe(main_exp2$legit) # in the range of normality
+
+t.test(main_exp1$legit, mu = 3.8, alternative = "two.sided") # sign. difference between exp. conditions in legitimacy
+
+legit_exp1 <- main_exp1$legit # outlier detection since trimmed mean (4.09) higher than mean (4.02)
+legit_exp1_mad <- Routliers::outliers_mad(x=legit_exp1)
+legit_exp1_mad # two outliers detected
+
+outliers_legit_exp1 <-dplyr::filter(main_exp1, legit < "1.368133") # ID 089 and ID 146 scored extremely low --> mean will increase even stronger
+
+nooutliers_legit_exp1 <- main_exp1 %>%
+  filter(legit >= "1.368133") 
+
+t.test(nooutliers_legit_exp1$legit, mu = 3.8, alternative = "two.sided") # repeat t-test without outliers, mean increases to M = 4.07, obs. continues to be sign. diff. from exp2
+  
+library(stats) # for Wilcoxon rank sum test/ Mann-Whitney test (~ t-test for median)
+wilcox.test(main_exp1$legit, mu = 4) # n.s.
 
 
 
