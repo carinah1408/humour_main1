@@ -67,6 +67,11 @@ main1_sub %>%
   summarise(mean_hum_check1 = mean(hum_check1), sd_hum_check1 = sd(hum_check1),
             mean_hum_check2 = mean(hum_check2), sd_hum_check2 = sd(hum_check2))
 
+t.test(main1_sub$hum_check1, mu = 3.99, alternative = "two.sided") # testing whether personal and other humour perception sign. diff 
+t.test(main1_sub$hum_check1, mu = 3.5, alternative = "two.sided") # testing whether personal humour perception sign. diff from scale mid-point (3.5)
+t.test(main1_sub$hum_check2, mu = 3.5, alternative = "two.sided") # testing whether other humour perception sign. diff from scale mid-point (3.5)
+
+
 ## comparison of perceptions of free expression and organisation across conditions
 
 main1_sub %>%
@@ -113,8 +118,116 @@ eff_2.pairwise.wilcox.test <- pairwise.wilcox.test(main1_sub$eff_check2, main1_s
                                                    p.adjust.method = "BH", conf.int = TRUE) # pairwise comparison (non-parametric)
 eff_2.pairwise.wilcox.test
 
+### reliability, normality, validity & making new variables----
+
+## self-categorization (reliability and variable generation)----
+
+library(performance) # inter-item correlation
+
+interitem_selfcat <- main1_sub[, c("selfcat_1", "selfcat_2")]
+item_intercor(interitem_selfcat) # inter-item correlation of 0.91
+
+main1_sub <- main1_sub %>% # create new variable "selfcat"
+  mutate(
+    selfcat = (selfcat_1 + selfcat_2)/2
+  )
+
+## organizational efficacy (reliability and variable generation)----
+
+interitem_orgaeff <- main1_sub[, c("orgaeff_1", "orgaeff_2")]
+item_intercor(interitem_orgaeff) # inter-item correlation of 0.92
+
+main1_sub <- main1_sub %>% # create new variable "selfcat"
+  mutate(
+    orgaeff = (orgaeff_1 + orgaeff_2)/2
+  )
+
+## competence stereotype (reliability and variable generation)
+
+interitem_stereo <- main1_sub[, c("stereo_1", "stereo_2")]
+item_intercor(interitem_stereo) # inter-item correlation of 0.85
+
+main1_sub <- main1_sub %>% # create new variable "selfcat"
+  mutate(
+    stereo = (stereo_1 + stereo_2)/2
+  )
+
+## legitimacy (reliablity, validty and variable generation)
+
+library(psych) # cronbach's alpha
+
+key <- list(
+  legit = c("legit_1", "legit_2", "legit_3")
+)
+
+score.items(key, main1_sub) # reliability of 0.87
+
+library(lavaan) # validity
+library(semPlot)
+library(lm.beta)
+
+legit.cfa <- 'legit.cfa =~ legit_1 + legit_2 + legit_3'
+cfa_legit.sem <- sem(legit.cfa, data = main1_sub)
+lavaan::summary(cfa_legit.sem, standardized = TRUE, fit.measures = TRUE) 
+# # model is saturated (sign chi-square, RMSEA = 0, CFI = 1)
+# the adequacy of saturated models can be tested by experimentally targeting it, i.e., if its predictions match the observed 
+# differences (or lack thereof) of the parameter estimates, then the model may be valid 
+# (https://stats.stackexchange.com/questions/283/what-is-a-saturated-model#:~:text=If%20a%20model%20is%20saturated,that%20the%20model%20is%20valid.)
+# --> can we observe differences in predictions based on condition (i.e., theoretically, individuals in control group should rate the
+# the group as legitimate, whereas individuals in the exp conditions should not/ to a lesser degree)
+
+## self-categorization (normality)
 
 
+hist(main1_sub$selfcat) # normality
+describe(main1_sub$selfcat) # # in the range of normality (skew: 0.01; kurtosis: -0.58), but visually slightly negatively skewed
+
+main_left <- main1_sub %>% # subgroup political affiliation = left
+  filter(polaffili == "Left")
+
+hist(main_left$selfcat) # even distribution of low, medium and high values
+describe(main_left$selfcat) # in the range of normality
+
+main_centre <- main1_sub %>% # subgroup political affiliation = centre
+  filter(polaffili == "Centre")
+
+hist(main_centre$selfcat) # positively skewed
+describe(main_centre$selfcat) # in the range of normality
+
+main_right <- main1_sub %>% # subgroup political affiliation = right
+  filter(polaffili == "Right")
+
+hist(main_right$selfcat) # strongly positively skewed
+describe(main_right$selfcat) # in the range of normality
+
+main_na <- main1_sub %>% # subgroup political affiliation = right
+  filter(polaffili == "Not affiliated")
+
+hist(main_na$selfcat) # even distribution of low, medium and high values
+describe(main_na$selfcat) # in the range of normality
+
+main_control <- main1_sub %>% # subgroup condition = control
+  filter(cond == "0")
+
+hist(main_control$selfcat) # positive skew
+describe(main_control$selfcat) # in the range of normality
+
+main_exp1 <- main1_sub %>% # subgroup condition = experimental condition 1
+  filter(cond == "1")
+
+hist(main_exp1$selfcat) # even distribution
+describe(main_exp1$selfcat) # in the range of normality
+
+main_exp2 <- main1_sub %>% # subgroup condition = experimental condition 2
+  filter(cond == "2")
+
+hist(main_exp2$selfcat) # positively skewed
+describe(main_exp2$selfcat) # in the range of normality
+
+
+
+hist(main_left$orgaeff) # even distribution of low, medium and high values
+describe(main_left$orgaeff) # in the range of normality
 
 
 
