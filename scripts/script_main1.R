@@ -327,3 +327,17 @@ legit_out_mad # no outliers detected
 support_out <- main1_sub$support
 support_out_mad <- Routliers::outliers_mad(x=support_out)
 support_out_mad # no outliers detected
+
+## comparison experimental conditions per variable
+
+t.test(main_exp1$orgaeff, mu = 3.084746, alternative = "two.sided") # n.s.
+t.test(main_exp1$stereo, mu = 2.766949, alternative = "two.sided") # n.s.
+t.test(main_exp1$legit, mu = 3.79661, alternative = "two.sided") # p = .03
+t.test(main_exp1$support, mu = 2.957627, alternative = "two.sided") # p = .01
+
+### intercorrelations, bi-variate correlations and multivariate outliers----
+
+
+
+
+
