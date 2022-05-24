@@ -277,5 +277,53 @@ t.test(nooutliers_legit_exp1$legit, mu = 3.8, alternative = "two.sided") # repea
 library(stats) # for Wilcoxon rank sum test/ Mann-Whitney test (~ t-test for median)
 wilcox.test(main_exp1$legit, mu = 4) # n.s.
 
+### descriptive statistics & univariate outliers inspection----
 
+main1_sub %>%
+  select(selfcat, orgaeff, stereo, legit, support) %>%
+  psych::describe() %>%
+  as_tibble(rownames="rowname")  %>%
+  print()
 
+summary <- main1_sub %>%
+  dplyr::group_by(cond) %>%
+  summarise(
+    selfcat_min = min(selfcat),
+    selfcat_max = max(selfcat),
+    selfcat_mean = mean(selfcat),
+    selfcat_sd = sd(selfcat),
+    orgaeff_min = min(orgaeff),
+    orgaeff_max = max(orgaeff),
+    orgaeff_mean = mean(orgaeff),
+    orgaeff_sd = sd(orgaeff),
+    stereo_min = min(stereo),
+    stereo_max = max(stereo),
+    stereo_mean = mean(stereo),
+    stereo_sd = sd(stereo),
+    legit_min = min(legit),
+    legit_max = max(legit),
+    legit_mean = mean(legit),
+    legit_sd = sd(legit),
+    support_min = min(support),
+    support_max = max(support),
+    support_mean = mean(support),
+    support_sd = sd(support))
+summary
+
+## univariate outliers inspection per variable----
+
+orgaeff_out <- main1_sub$orgaeff
+orgaeff_out_mad <- Routliers::outliers_mad(x=orgaeff_out)
+orgaeff_out_mad # no outliers detected
+
+stereo_out <- main1_sub$stereo
+stereo_out_mad <- Routliers::outliers_mad(x=stereo_out)
+stereo_out_mad # no outliers detected
+
+legit_out <- main1_sub$legit
+legit_out_mad <- Routliers::outliers_mad(x=legit_out)
+legit_out_mad # no outliers detected
+
+support_out <- main1_sub$support
+support_out_mad <- Routliers::outliers_mad(x=support_out)
+support_out_mad # no outliers detected
