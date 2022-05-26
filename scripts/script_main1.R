@@ -67,6 +67,8 @@ main1_sub %>%
   summarise(mean_hum_check1 = mean(hum_check1), sd_hum_check1 = sd(hum_check1),
             mean_hum_check2 = mean(hum_check2), sd_hum_check2 = sd(hum_check2))
 
+# DO AGAIN WITH SUBSETS
+
 t.test(main1_sub$hum_check1, mu = 3.99, alternative = "two.sided") # testing whether personal and other humour perception sign. diff 
 t.test(main1_sub$hum_check1, mu = 3.5, alternative = "two.sided") # testing whether personal humour perception sign. diff from scale mid-point (3.5)
 t.test(main1_sub$hum_check2, mu = 3.5, alternative = "two.sided") # testing whether other humour perception sign. diff from scale mid-point (3.5)
@@ -330,10 +332,27 @@ support_out_mad # no outliers detected
 
 ## comparison experimental conditions per variable
 
+# DO AGAIN WITH SUBSETS
+
 t.test(main_exp1$orgaeff, mu = 3.084746, alternative = "two.sided") # n.s.
 t.test(main_exp1$stereo, mu = 2.766949, alternative = "two.sided") # n.s.
 t.test(main_exp1$legit, mu = 3.79661, alternative = "two.sided") # p = .03
 t.test(main_exp1$support, mu = 2.957627, alternative = "two.sided") # p = .01
+
+### filter out and compare participants that were relatively close to guessing the purpose of the experiment
+
+## new "condition" = "purpose" (= purpose guessed) vs "no purpose" (purposed not guessed)
+
+main1_sub <- main1_sub %>%
+  mutate(purpose = ifelse(id ==  "042"| id == "159"| id == "163"| id == "313" | id == "339"| id == "354"| id =="357"|
+                            id == "065"| id == "143"| id == "144"| id == "160"| id =="174"| id == "178"| id == "297"| 
+                            id == "305", 1, 0))
+
+# t.test per condition, subsets by condition were updated to include the new variable
+
+t.test(main_exp1$support ~ main_exp1$purpose, var.equal = FALSE) # n.s.
+t.test(main_exp2$support ~ main_exp2$purpose, var.equal = FALSE) # n.s.
+
 
 ### intercorrelations, bi-variate correlations and multivariate outliers----
 
