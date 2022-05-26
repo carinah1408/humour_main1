@@ -67,8 +67,6 @@ main1_sub %>%
   summarise(mean_hum_check1 = mean(hum_check1), sd_hum_check1 = sd(hum_check1),
             mean_hum_check2 = mean(hum_check2), sd_hum_check2 = sd(hum_check2))
 
-# DO AGAIN WITH SUBSETS
-
 t.test(main1_sub$hum_check1, mu = 3.99, alternative = "two.sided") # testing whether personal and other humour perception sign. diff 
 t.test(main1_sub$hum_check1, mu = 3.5, alternative = "two.sided") # testing whether personal humour perception sign. diff from scale mid-point (3.5)
 t.test(main1_sub$hum_check2, mu = 3.5, alternative = "two.sided") # testing whether other humour perception sign. diff from scale mid-point (3.5)
@@ -332,14 +330,15 @@ support_out_mad # no outliers detected
 
 ## comparison experimental conditions per variable
 
-# DO AGAIN WITH SUBSETS
+main1_sub_comp_exp <- main1_sub %>%
+  filter(cond != "0")
 
-t.test(main_exp1$orgaeff, mu = 3.084746, alternative = "two.sided") # n.s.
-t.test(main_exp1$stereo, mu = 2.766949, alternative = "two.sided") # n.s.
-t.test(main_exp1$legit, mu = 3.79661, alternative = "two.sided") # p = .03
-t.test(main_exp1$support, mu = 2.957627, alternative = "two.sided") # p = .01
+t.test(main1_sub_comp_exp$orgaeff ~ main1_sub_comp_exp$cond) # n.s.
+t.test(main1_sub_comp_exp$stereo ~ main1_sub_comp_exp$cond) # n.s.
+t.test(main1_sub_comp_exp$legit ~ main1_sub_comp_exp$cond) # n.s.
+t.test(main1_sub_comp_exp$support ~ main1_sub_comp_exp$cond) # p = .05
 
-### filter out and compare participants that were relatively close to guessing the purpose of the experiment
+### filter out and compare participants that were relatively close to guessing the purpose of the experiment----
 
 ## new "condition" = "purpose" (= purpose guessed) vs "no purpose" (purposed not guessed)
 
@@ -349,6 +348,14 @@ main1_sub <- main1_sub %>%
                             id == "305", 1, 0))
 
 # t.test per condition, subsets by condition were updated to include the new variable
+
+main_exp1 %>%
+  group_by(purpose) %>%
+  summarise(mean = mean(support), sd = sd(support))
+
+main_exp2 %>%
+  group_by(purpose) %>%
+  summarise(mean = mean(support), sd = sd(support))
 
 t.test(main_exp1$support ~ main_exp1$purpose, var.equal = FALSE) # n.s.
 t.test(main_exp2$support ~ main_exp2$purpose, var.equal = FALSE) # n.s.
