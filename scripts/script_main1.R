@@ -406,7 +406,6 @@ main_exp2 %>%
 t.test(main_exp1$support ~ main_exp1$purpose, var.equal = FALSE) # n.s.
 t.test(main_exp2$support ~ main_exp2$purpose, var.equal = FALSE) # n.s.
 
-
 ### intercorrelations----
 
 main_cor <-main1_sub %>%
@@ -420,17 +419,163 @@ rcorr(as.matrix(main_cor)) %>%
 library(apaTables)
 apa.cor.table(main_cor,filename = "Correlation_main1.doc",table.number = 1,show.conf.interval = F)
 
-
 ### testing homogeneity of variance between conditions/ multivariate outlier detection----
 
-selfcategorization <- main1_sub$selfcat # multivariate outliers
+leveneTest(support ~ cond, data = main1_sub) # n.s. --> homogeneity of variance
+
+selfcategorization <- main1_sub$selfcat # multivariate outliers overall
 organisationaleff <- main1_sub$orgaeff
 stereotype <- main1_sub$stereo
 legitimacy <- main1_sub$legit
 support <- main1_sub$support
 
 
-legit_stereo_mcd <- Routliers::outliers_mcd(x = data.frame(legitimacy,stereotype))
-legit_stereo_mcd # 13 outliers detected
-Routliers::plot_outliers_mcd(legit_stereo_mcd, x = data.frame(legitimacy, stereotype))
-# no influential cases (in line with diagnostics)
+selfcategorization_control <- main_control$selfcat # multivariate outliers 
+organisationaleff_control <- main_control$orgaeff
+stereotype_control <- main_control$stereo
+legitimacy_control <- main_control$legit
+support_control <- main_control$support
+
+selfcategorization_exp1 <- main_exp1$selfcat 
+organisationaleff_exp1 <- main_exp1$orgaeff
+stereotype_exp1 <- main_exp1$stereo
+legitimacy_exp1 <- main_exp1$legit
+support_exp1 <- main_exp1$support
+
+selfcategorization_exp2 <- main_exp2$selfcat 
+organisationaleff_exp2 <- main_exp2$orgaeff
+stereotype_exp2 <- main_exp2$stereo
+legitimacy_exp2 <- main_exp2$legit
+support_exp2 <- main_exp2$support
+
+
+orgaeff_legit_mcd <- Routliers::outliers_mcd(x = data.frame(organisationaleff,legitimacy)) # overall
+orgaeff_legit_mcd # 5 outliers detected
+Routliers::plot_outliers_mcd(orgaeff_legit_mcd, x = data.frame(organisationaleff, legitimacy))
+# minimally steeper slope without outliers
+
+outliers_orgaeff_legit <- orgaeff_legit_mcd$outliers_pos
+outliers_orgaeff_legit # ID58, ID133, ID138, ID171, ID289
+
+stereo_legit_mcd <- Routliers::outliers_mcd(x = data.frame(stereotype,legitimacy))
+stereo_legit_mcd # 5 outliers detected
+Routliers::plot_outliers_mcd(stereo_legit_mcd, x = data.frame(stereotype, legitimacy))
+# minimally steeper slope without outliers
+
+outliers_stereo_legit <- stereo_legit_mcd$outliers_pos
+outliers_stereo_legit # ID58, ID73, ID195, ID223, ID289
+
+legit_support_mcd <- Routliers::outliers_mcd(x = data.frame(legitimacy, support))
+legit_support_mcd # 17 outliers detected
+Routliers::plot_outliers_mcd(legit_support_mcd, x = data.frame(legitimacy, support))
+# slightly steeper slope without outliers
+
+outliers_legit_support <- legit_support_mcd$outliers_pos
+outliers_legit_support # ID 15  37  56  89  91 114 138 146 153 171 220 231 234 283 289 297 339 
+
+
+# by condition (control)
+control_orgaeff_legit_mcd <- Routliers::outliers_mcd(x = data.frame(organisationaleff_control,legitimacy_control))
+control_orgaeff_legit_mcd # 15 outliers detected
+Routliers::plot_outliers_mcd(control_orgaeff_legit_mcd, x = data.frame(organisationaleff_control, legitimacy_control))
+# somewhat steeper slope without outliers
+
+outliers_control_orgaeff_legit <- control_orgaeff_legit_mcd$outliers_pos
+outliers_control_orgaeff_legit # ID 6  14  21  22  25  27  48  50  53  55  62  67  73  89 107 
+
+glm_control_orgaeff_legit <- lm(legit ~ orgaeff, main_control) # cook's distance for influential outliers
+plot(glm_control_orgaeff_legit) # ID 14 22 27 identified as outliers (but not crossing)
+
+control_stereo_legit_mcd <- Routliers::outliers_mcd(x = data.frame(stereotype_control,legitimacy_control))
+control_stereo_legit_mcd # 13 outliers detected
+Routliers::plot_outliers_mcd(control_stereo_legit_mcd, x = data.frame(stereotype_control, legitimacy_control))
+# slightly steeper slope without outliers
+
+outliers_control_stereo_legit <- control_stereo_legit_mcd$outliers_pos
+outliers_control_stereo_legit # ID 6  19  20  21  22  30  42  50  53  55  62 100 107 
+
+glm_control_stereo_legit <- lm(legit ~ stereo, main_control)
+plot(glm_control_stereo_legit) # ID 22 28 62 (but not crossing) 
+
+control_legit_support_mcd <- Routliers::outliers_mcd(x = data.frame(legitimacy_control, support_control))
+control_legit_support_mcd # 6 outliers detected
+Routliers::plot_outliers_mcd(control_legit_support_mcd, x = data.frame(legitimacy_control, support_control))
+# somnewhat steeper slope without outliers
+
+outliers_control_legit_support <- control_legit_support_mcd$outliers_pos
+outliers_control_legit_support # ID 21 33 50 62 95 96
+
+glm_control_legit_support <- lm(support ~ legit, main_control)
+plot(glm_control_legit_support) # ID 33 95 96 (but not crossing)
+
+
+# by condition (exp1)
+exp1_orgaeff_legit_mcd <- Routliers::outliers_mcd(x = data.frame(organisationaleff_exp1,legitimacy_exp1))
+exp1_orgaeff_legit_mcd # 1 outliers detected
+Routliers::plot_outliers_mcd(exp1_orgaeff_legit_mcd, x = data.frame(organisationaleff_exp1, legitimacy_exp1))
+# minimally steeper slope without outlier
+
+outliers_exp1_orgaeff_legit <- exp1_orgaeff_legit_mcd$outliers_pos
+outliers_exp1_orgaeff_legit # ID37
+
+glm_exp1_orgaeff_legit <- lm(legit ~ orgaeff, main_exp1)
+plot(glm_exp1_orgaeff_legit) # 30 37 84 (but not crossing)
+
+
+exp1_stereo_legit_mcd <- Routliers::outliers_mcd(x = data.frame(stereotype_exp1,legitimacy_exp1))
+exp1_stereo_legit_mcd # 2 outliers detected
+Routliers::plot_outliers_mcd(exp1_stereo_legit_mcd, x = data.frame(stereotype_exp1, legitimacy_exp1))
+# slightly steeper slope without outlier
+
+outliers_exp1_stereo_legit <- exp1_stereo_legit_mcd$outliers_pos
+outliers_exp1_stereo_legit # ID 30 50
+
+glm_exp1_stereo_legit <- lm(legit ~ stereo, main_exp1)
+plot(glm_exp1_stereo_legit) # ID 30 50 98 (not crossing)
+
+exp1_legit_support_mcd <- Routliers::outliers_mcd(x = data.frame(legitimacy_exp1, support_exp1))
+exp1_legit_support_mcd # 5 outliers detected
+Routliers::plot_outliers_mcd(exp1_legit_support_mcd, x = data.frame(legitimacy_exp1, support_exp1))
+# somewhat steeper slope without outlier
+
+outliers_exp1_legit_support <- exp1_legit_support_mcd$outliers_pos
+outliers_exp1_legit_support # ID 8  30  50  79 112 
+
+glm_exp1_legit_support <- lm(support ~ legit, main_exp1)
+plot(glm_exp1_legit_support) # ID 8 50 79 (not crossing)
+
+
+# by condition (exp2)
+exp2_orgaeff_legit_mcd <- Routliers::outliers_mcd(x = data.frame(organisationaleff_exp2,legitimacy_exp2))
+exp2_orgaeff_legit_mcd # 7 outliers detected
+Routliers::plot_outliers_mcd(exp2_orgaeff_legit_mcd, x = data.frame(organisationaleff_exp2, legitimacy_exp2))
+# somewhat steeper slope without outliers
+
+outliers_exp2_orgaeff_legit <- exp2_orgaeff_legit_mcd$outliers_pos
+outliers_exp2_orgaeff_legit # ID 22  32  39  88  95 111 112 
+
+glm_exp2_orgaeff_legit <- lm(legit ~ orgaeff, main_exp2)
+plot(glm_exp2_orgaeff_legit) # 88 95 112 (not crossing)
+
+exp2_stereo_legit_mcd <- Routliers::outliers_mcd(x = data.frame(stereotype_exp2,legitimacy_exp2))
+exp2_stereo_legit_mcd # 2 outliers detected
+Routliers::plot_outliers_mcd(exp1_stereo_legit_mcd, x = data.frame(stereotype_exp2, legitimacy_exp2))
+# almost no difference between slopes
+
+outliers_exp2_stereo_legit <- exp2_stereo_legit_mcd$outliers_pos
+outliers_exp2_stereo_legit # ID 60 95
+
+glm_exp2_stereo_legit <- lm(legit ~ stereo, main_exp2)
+plot(glm_exp2_stereo_legit) # ID 69 95 112 (not crossing)
+
+exp2_legit_support_mcd <- Routliers::outliers_mcd(x = data.frame(legitimacy_exp2, support_exp2))
+exp2_legit_support_mcd # 30 outliers detected
+Routliers::plot_outliers_mcd(exp2_legit_support_mcd, x = data.frame(legitimacy_exp2, support_exp2))
+# strongly flatter slope without outliers!!
+
+outliers_exp2_legit_support <- exp2_legit_support_mcd$outliers_pos
+outliers_exp2_legit_support # ID 3  10  16  17  28  34  35  42  46  48  50  56  60  66  69  71  81  82  84  85  89  92  93  97 102 103 110 111 115 116 
+
+glm_exp2_legit_support <- lm(support ~ legit, main_exp2)
+plot(glm_exp2_legit_support) # ID 10 68 72 (not crossing)
+
