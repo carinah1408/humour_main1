@@ -580,3 +580,10 @@ outliers_exp2_legit_support # ID 3  10  16  17  28  34  35  42  46  48  50  56  
 glm_exp2_legit_support <- lm(support ~ legit, main_exp2)
 plot(glm_exp2_legit_support) # ID 10 68 72 (not crossing)
 
+
+
+# COMPARE UNI AND MULTIVARIATE OUTLIERS BY CONDITION AND SEE IF THEY OVERLAP --> FIND THOSE THAT MIGHT BE POTENTIALLY BEST EXCLUDED
+
+
+
+### main analysis - mediation----
