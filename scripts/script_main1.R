@@ -118,7 +118,7 @@ eff_2.pairwise.wilcox.test <- pairwise.wilcox.test(main1_sub$eff_check2, main1_s
                                                    p.adjust.method = "BH", conf.int = TRUE) # pairwise comparison (non-parametric)
 eff_2.pairwise.wilcox.test
 
-### reliability, normality, validity & making new variables----
+### reliability, checking normality, validity & making new variables----
 
 ## self-categorization (reliability and variable generation)----
 
@@ -328,6 +328,56 @@ support_out <- main1_sub$support
 support_out_mad <- Routliers::outliers_mad(x=support_out)
 support_out_mad # no outliers detected
 
+## univariate outliers inspection per variable per condition----
+
+orgaeff_control_out <- main_control$orgaeff
+orgaeff_control_out_mad <- Routliers::outliers_mad(x=orgaeff_control_out)
+orgaeff_control_out_mad # no outliers detected
+
+orgaeff_exp1_out <- main_exp1$orgaeff
+orgaeff_exp1_out_mad <- Routliers::outliers_mad(x=orgaeff_exp1_out)
+orgaeff_exp1_out_mad # no outliers detected
+
+orgaeff_exp2_out <- main_exp2$orgaeff
+orgaeff_exp2_out_mad <- Routliers::outliers_mad(x=orgaeff_exp2_out)
+orgaeff_exp2_out_mad # no outliers detected
+
+stereo_control_out <- main_control$stereo
+stereo_control_out_mad <- Routliers::outliers_mad(x=stereo_control_out)
+stereo_control_out_mad # 3 outliers detected (extremely low): ID056, ID138, ID311
+
+stereo_exp1_out <- main_exp1$stereo
+stereo_exp1_out_mad <- Routliers::outliers_mad(x=stereo_exp1_out)
+stereo_exp1_out_mad # no outliers detected
+
+stereo_exp2_out <- main_exp2$stereo
+stereo_exp2_out_mad <- Routliers::outliers_mad(x=stereo_exp2_out)
+stereo_exp2_out_mad # no outliers detected
+
+legit_control_out <- main_control$legit
+legit_control_out_mad <- Routliers::outliers_mad(x=legit_control_out)
+legit_control_out_mad # no outliers detected
+
+legit_exp1_out <- main_exp1$legit
+legit_exp1_out_mad <- Routliers::outliers_mad(x=legit_exp1_out)
+legit_exp1_out_mad # 2 outliers detected (extremely low): ID089, ID146
+
+legit_exp2_out <- main_exp2$legit
+legit_exp2_out_mad <- Routliers::outliers_mad(x=legit_exp2_out)
+legit_exp2_out_mad # no outliers detected
+
+support_control_out <- main_control$support
+support_control_out_mad <- Routliers::outliers_mad(x=support_control_out)
+support_control_out_mad # no outliers detected
+
+support_exp1_out <- main_exp1$support
+support_exp1_out_mad <- Routliers::outliers_mad(x=support_exp1_out)
+support_exp1_out_mad # no outliers detected
+
+support_exp2_out <- main_exp2$support
+support_exp2_out_mad <- Routliers::outliers_mad(x=support_exp2_out)
+support_exp2_out_mad # 2 outliers detected (extremely high): ID032, ID223
+
 ## comparison experimental conditions per variable
 
 main1_sub_comp_exp <- main1_sub %>%
@@ -340,16 +390,12 @@ t.test(main1_sub_comp_exp$support ~ main1_sub_comp_exp$cond) # p = .05
 
 ### filter out and compare participants that were relatively close to guessing the purpose of the experiment----
 
-## new "condition" = "purpose" (= purpose guessed) vs "no purpose" (purposed not guessed)
-
-main1_sub <- main1_sub %>%
+main1_sub <- main1_sub %>% #new "condition" = "purpose" (= purpose guessed) vs "no purpose" (purposed not guessed)
   mutate(purpose = ifelse(id ==  "042"| id == "159"| id == "163"| id == "313" | id == "339"| id == "354"| id =="357"|
                             id == "065"| id == "143"| id == "144"| id == "160"| id =="174"| id == "178"| id == "297"| 
                             id == "305", 1, 0))
 
-# t.test per condition, subsets by condition were updated to include the new variable
-
-main_exp1 %>%
+main_exp1 %>% # t.test per condition, subsets by condition were updated to include the new variable
   group_by(purpose) %>%
   summarise(mean = mean(support), sd = sd(support))
 
@@ -361,9 +407,30 @@ t.test(main_exp1$support ~ main_exp1$purpose, var.equal = FALSE) # n.s.
 t.test(main_exp2$support ~ main_exp2$purpose, var.equal = FALSE) # n.s.
 
 
-### intercorrelations, bi-variate correlations and multivariate outliers----
+### intercorrelations----
+
+main_cor <-main1_sub %>%
+  select(selfcat, orgaeff, stereo, legit, support) %>%
+  round(., 2)
+
+library(Hmisc)
+rcorr(as.matrix(main_cor)) %>%
+  print()
+
+library(apaTables)
+apa.cor.table(main_cor,filename = "Correlation_main1.doc",table.number = 1,show.conf.interval = F)
 
 
+### testing homogeneity of variance between conditions/ multivariate outlier detection----
+
+selfcategorization <- main1_sub$selfcat # multivariate outliers
+organisationaleff <- main1_sub$orgaeff
+stereotype <- main1_sub$stereo
+legitimacy <- main1_sub$legit
+support <- main1_sub$support
 
 
-
+legit_stereo_mcd <- Routliers::outliers_mcd(x = data.frame(legitimacy,stereotype))
+legit_stereo_mcd # 13 outliers detected
+Routliers::plot_outliers_mcd(legit_stereo_mcd, x = data.frame(legitimacy, stereotype))
+# no influential cases (in line with diagnostics)
