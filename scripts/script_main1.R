@@ -44,7 +44,7 @@ main1_sub %>%
   group_by(polaffili) %>%
   summarise(., mean_age = mean(age), sd_age = sd(age), n = n())
 
-### gender per political affiliation----
+### gender by political affiliation----
 main1_sub %>%
   group_by(polaffili, gend) %>%
   summarise(n())
@@ -54,7 +54,7 @@ main1_sub %>%
   group_by(cond) %>%
   summarise(n())
 
-### allocation to conditions (per political affiliation)----
+### allocation to conditions (by political affiliation)----
 main1_sub %>%
   group_by(cond, polaffili) %>%
   summarise(n())
@@ -310,7 +310,7 @@ summary <- main1_sub %>%
     support_sd = sd(support))
 summary
 
-## univariate outliers inspection per variable----
+## univariate outliers inspection by variable----
 
 orgaeff_out <- main1_sub$orgaeff
 orgaeff_out_mad <- Routliers::outliers_mad(x=orgaeff_out)
@@ -328,7 +328,7 @@ support_out <- main1_sub$support
 support_out_mad <- Routliers::outliers_mad(x=support_out)
 support_out_mad # no outliers detected
 
-## univariate outliers inspection per variable per condition----
+## univariate outliers inspection by variable by condition----
 
 orgaeff_control_out <- main_control$orgaeff
 orgaeff_control_out_mad <- Routliers::outliers_mad(x=orgaeff_control_out)
@@ -378,7 +378,7 @@ support_exp2_out <- main_exp2$support
 support_exp2_out_mad <- Routliers::outliers_mad(x=support_exp2_out)
 support_exp2_out_mad # 2 outliers detected (extremely high): ID032, ID223
 
-## comparison experimental conditions per variable
+## comparison experimental conditions by variable
 
 main1_sub_comp_exp <- main1_sub %>%
   filter(cond != "0")
@@ -388,14 +388,14 @@ t.test(main1_sub_comp_exp$stereo ~ main1_sub_comp_exp$cond) # n.s.
 t.test(main1_sub_comp_exp$legit ~ main1_sub_comp_exp$cond) # n.s.
 t.test(main1_sub_comp_exp$support ~ main1_sub_comp_exp$cond) # p = .05
 
-### filter out and compare participants that were relatively close to guessing the purpose of the experiment----
+### filter  and compare participants that were relatively close to guessing the purpose of the experiment----
 
 main1_sub <- main1_sub %>% #new "condition" = "purpose" (= purpose guessed) vs "no purpose" (purposed not guessed)
   mutate(purpose = ifelse(id ==  "042"| id == "159"| id == "163"| id == "313" | id == "339"| id == "354"| id =="357"|
                             id == "065"| id == "143"| id == "144"| id == "160"| id =="174"| id == "178"| id == "297"| 
                             id == "305", 1, 0))
 
-main_exp1 %>% # t.test per condition, subsets by condition were updated to include the new variable
+main_exp1 %>% # t.test by condition, subsets by condition were updated to include the new variable
   group_by(purpose) %>%
   summarise(mean = mean(support), sd = sd(support))
 
@@ -419,18 +419,19 @@ rcorr(as.matrix(main_cor)) %>%
 library(apaTables)
 apa.cor.table(main_cor,filename = "Correlation_main1.doc",table.number = 1,show.conf.interval = F)
 
-### testing homogeneity of variance between conditions/ multivariate outlier detection----
+### testing homogeneity of variance between conditions----
 
 leveneTest(support ~ cond, data = main1_sub) # n.s. --> homogeneity of variance
 
-selfcategorization <- main1_sub$selfcat # multivariate outliers overall
+### multivariate outliers detection----
+
+selfcategorization <- main1_sub$selfcat 
 organisationaleff <- main1_sub$orgaeff
 stereotype <- main1_sub$stereo
 legitimacy <- main1_sub$legit
 support <- main1_sub$support
 
-
-selfcategorization_control <- main_control$selfcat # multivariate outliers 
+selfcategorization_control <- main_control$selfcat 
 organisationaleff_control <- main_control$orgaeff
 stereotype_control <- main_control$stereo
 legitimacy_control <- main_control$legit
@@ -448,7 +449,7 @@ stereotype_exp2 <- main_exp2$stereo
 legitimacy_exp2 <- main_exp2$legit
 support_exp2 <- main_exp2$support
 
-
+## overall
 orgaeff_legit_mcd <- Routliers::outliers_mcd(x = data.frame(organisationaleff,legitimacy)) # overall
 orgaeff_legit_mcd # 5 outliers detected
 Routliers::plot_outliers_mcd(orgaeff_legit_mcd, x = data.frame(organisationaleff, legitimacy))
@@ -474,7 +475,7 @@ outliers_legit_support <- legit_support_mcd$outliers_pos
 outliers_legit_support # ID 15  37  56  89  91 114 138 146 153 171 220 231 234 283 289 297 339 
 
 
-# by condition (control)
+## by condition (control)
 control_orgaeff_legit_mcd <- Routliers::outliers_mcd(x = data.frame(organisationaleff_control,legitimacy_control))
 control_orgaeff_legit_mcd # 15 outliers detected
 Routliers::plot_outliers_mcd(control_orgaeff_legit_mcd, x = data.frame(organisationaleff_control, legitimacy_control))
@@ -509,7 +510,7 @@ glm_control_legit_support <- lm(support ~ legit, main_control)
 plot(glm_control_legit_support) # ID 33 95 96 (but not crossing)
 
 
-# by condition (exp1)
+## by condition (exp1)
 exp1_orgaeff_legit_mcd <- Routliers::outliers_mcd(x = data.frame(organisationaleff_exp1,legitimacy_exp1))
 exp1_orgaeff_legit_mcd # 1 outliers detected
 Routliers::plot_outliers_mcd(exp1_orgaeff_legit_mcd, x = data.frame(organisationaleff_exp1, legitimacy_exp1))
@@ -545,7 +546,7 @@ glm_exp1_legit_support <- lm(support ~ legit, main_exp1)
 plot(glm_exp1_legit_support) # ID 8 50 79 (not crossing)
 
 
-# by condition (exp2)
+## by condition (exp2)
 exp2_orgaeff_legit_mcd <- Routliers::outliers_mcd(x = data.frame(organisationaleff_exp2,legitimacy_exp2))
 exp2_orgaeff_legit_mcd # 7 outliers detected
 Routliers::plot_outliers_mcd(exp2_orgaeff_legit_mcd, x = data.frame(organisationaleff_exp2, legitimacy_exp2))
