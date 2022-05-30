@@ -1,21 +1,21 @@
 ### load packages ----
 library(tidyverse)
-library(dplyr)
 library(remotes)
 library(devtools)
 library(car)
+library(dplyr)
 install_github("mdelacre/Routliers")
 
 ### load dataset, make political affilication and exp. conditions factors, recode political affiliation----
 main1 <- read_csv("data/main1_workdata.csv") %>%
   as_tibble() %>%
   mutate(polaffili = as.factor(polaffili),
-         polaffili = recode(polaffili,
+         polaffili = dplyr::recode(polaffili,
                             "1" = "Left",
                             "2" = "Centre",
                             "3" = "Right",
                             "4" = "Not affiliated")) %>%
-  mutate(gend = recode(gend,
+  mutate(gend = dplyr::recode(gend,
                        "1" = "Female",
                        "2" = "Male",
                        "3" = "Trans Female/ Trans Woman",
@@ -456,7 +456,7 @@ Routliers::plot_outliers_mcd(orgaeff_legit_mcd, x = data.frame(organisationaleff
 # minimally steeper slope without outliers
 
 outliers_orgaeff_legit <- orgaeff_legit_mcd$outliers_pos
-outliers_orgaeff_legit # ID58, ID133, ID138, ID171, ID289
+outliers_orgaeff_legit # position (= ID): 58 133 138 171 289
 
 stereo_legit_mcd <- Routliers::outliers_mcd(x = data.frame(stereotype,legitimacy))
 stereo_legit_mcd # 5 outliers detected
@@ -482,10 +482,11 @@ Routliers::plot_outliers_mcd(control_orgaeff_legit_mcd, x = data.frame(organisat
 # somewhat steeper slope without outliers
 
 outliers_control_orgaeff_legit <- control_orgaeff_legit_mcd$outliers_pos
-outliers_control_orgaeff_legit # ID 6  14  21  22  25  27  48  50  53  55  62  67  73  89 107 
+outliers_control_orgaeff_legit # position: 6  14  21  22  25  27  48  50  53  55  62  67  73  89 107 
+# => IDs: 014, 038, 056, 058, 063, 074, 133, 138, 147, 152, 171, 195, 213, 263, 311
 
 glm_control_orgaeff_legit <- lm(legit ~ orgaeff, main_control) # cook's distance for influential outliers
-plot(glm_control_orgaeff_legit) # ID 14 22 27 identified as outliers (but not crossing)
+plot(glm_control_orgaeff_legit) # IDposition 14 22 27 identified as outliers (but not crossing)
 
 control_stereo_legit_mcd <- Routliers::outliers_mcd(x = data.frame(stereotype_control,legitimacy_control))
 control_stereo_legit_mcd # 13 outliers detected
@@ -493,10 +494,11 @@ Routliers::plot_outliers_mcd(control_stereo_legit_mcd, x = data.frame(stereotype
 # slightly steeper slope without outliers
 
 outliers_control_stereo_legit <- control_stereo_legit_mcd$outliers_pos
-outliers_control_stereo_legit # ID 6  19  20  21  22  30  42  50  53  55  62 100 107 
+outliers_control_stereo_legit # position: 6  19  20  21  22  30  42  50  53  55  62 100 107 
+# => IDs: 014, 051, 054, 056, 084, 119, 138, 152, 171, 292, 311 
 
 glm_control_stereo_legit <- lm(legit ~ stereo, main_control)
-plot(glm_control_stereo_legit) # ID 22 28 62 (but not crossing) 
+plot(glm_control_stereo_legit) # IDposition 22 28 62 (but not crossing) 
 
 control_legit_support_mcd <- Routliers::outliers_mcd(x = data.frame(legitimacy_control, support_control))
 control_legit_support_mcd # 6 outliers detected
@@ -504,10 +506,10 @@ Routliers::plot_outliers_mcd(control_legit_support_mcd, x = data.frame(legitimac
 # somnewhat steeper slope without outliers
 
 outliers_control_legit_support <- control_legit_support_mcd$outliers_pos
-outliers_control_legit_support # ID 21 33 50 62 95 96
+outliers_control_legit_support # position: 21 33 50 62 95 96 => IDs: 056, 091, 138, 171, 281, 283
 
 glm_control_legit_support <- lm(support ~ legit, main_control)
-plot(glm_control_legit_support) # ID 33 95 96 (but not crossing)
+plot(glm_control_legit_support) # IDposition 33 95 96 (but not crossing)
 
 
 ## by condition (exp1)
@@ -517,7 +519,7 @@ Routliers::plot_outliers_mcd(exp1_orgaeff_legit_mcd, x = data.frame(organisation
 # minimally steeper slope without outlier
 
 outliers_exp1_orgaeff_legit <- exp1_orgaeff_legit_mcd$outliers_pos
-outliers_exp1_orgaeff_legit # ID37
+outliers_exp1_orgaeff_legit # position: 37 => ID 110
 
 glm_exp1_orgaeff_legit <- lm(legit ~ orgaeff, main_exp1)
 plot(glm_exp1_orgaeff_legit) # 30 37 84 (but not crossing)
@@ -529,10 +531,10 @@ Routliers::plot_outliers_mcd(exp1_stereo_legit_mcd, x = data.frame(stereotype_ex
 # slightly steeper slope without outlier
 
 outliers_exp1_stereo_legit <- exp1_stereo_legit_mcd$outliers_pos
-outliers_exp1_stereo_legit # ID 30 50
+outliers_exp1_stereo_legit # position 30 50 => IDs: 089, 146
 
 glm_exp1_stereo_legit <- lm(legit ~ stereo, main_exp1)
-plot(glm_exp1_stereo_legit) # ID 30 50 98 (not crossing)
+plot(glm_exp1_stereo_legit) # IDposition 30 50 98 (not crossing)
 
 exp1_legit_support_mcd <- Routliers::outliers_mcd(x = data.frame(legitimacy_exp1, support_exp1))
 exp1_legit_support_mcd # 5 outliers detected
@@ -540,10 +542,10 @@ Routliers::plot_outliers_mcd(exp1_legit_support_mcd, x = data.frame(legitimacy_e
 # somewhat steeper slope without outlier
 
 outliers_exp1_legit_support <- exp1_legit_support_mcd$outliers_pos
-outliers_exp1_legit_support # ID 8  30  50  79 112 
+outliers_exp1_legit_support # position: 8  30  50  79 112 => IDs: 015, 089, 146, 234, 339
 
 glm_exp1_legit_support <- lm(support ~ legit, main_exp1)
-plot(glm_exp1_legit_support) # ID 8 50 79 (not crossing)
+plot(glm_exp1_legit_support) # IDposition 8 50 79 (not crossing)
 
 
 ## by condition (exp2)
@@ -553,10 +555,10 @@ Routliers::plot_outliers_mcd(exp2_orgaeff_legit_mcd, x = data.frame(organisation
 # somewhat steeper slope without outliers
 
 outliers_exp2_orgaeff_legit <- exp2_orgaeff_legit_mcd$outliers_pos
-outliers_exp2_orgaeff_legit # ID 22  32  39  88  95 111 112 
+outliers_exp2_orgaeff_legit # position: 22  32  39  88  95 111 112 => IDs: 072, 099, 123, 267, 289, 334, 335
 
 glm_exp2_orgaeff_legit <- lm(legit ~ orgaeff, main_exp2)
-plot(glm_exp2_orgaeff_legit) # 88 95 112 (not crossing)
+plot(glm_exp2_orgaeff_legit) # IDposition: 88 95 112 (not crossing)
 
 exp2_stereo_legit_mcd <- Routliers::outliers_mcd(x = data.frame(stereotype_exp2,legitimacy_exp2))
 exp2_stereo_legit_mcd # 2 outliers detected
@@ -564,10 +566,10 @@ Routliers::plot_outliers_mcd(exp1_stereo_legit_mcd, x = data.frame(stereotype_ex
 # almost no difference between slopes
 
 outliers_exp2_stereo_legit <- exp2_stereo_legit_mcd$outliers_pos
-outliers_exp2_stereo_legit # ID 60 95
+outliers_exp2_stereo_legit # position: 69 95 => IDs: 223, 289
 
 glm_exp2_stereo_legit <- lm(legit ~ stereo, main_exp2)
-plot(glm_exp2_stereo_legit) # ID 69 95 112 (not crossing)
+plot(glm_exp2_stereo_legit) # IDposition: 69 95 112 (not crossing)
 
 exp2_legit_support_mcd <- Routliers::outliers_mcd(x = data.frame(legitimacy_exp2, support_exp2))
 exp2_legit_support_mcd # 30 outliers detected
@@ -575,15 +577,40 @@ Routliers::plot_outliers_mcd(exp2_legit_support_mcd, x = data.frame(legitimacy_e
 # strongly flatter slope without outliers!!
 
 outliers_exp2_legit_support <- exp2_legit_support_mcd$outliers_pos
-outliers_exp2_legit_support # ID 3  10  16  17  28  34  35  42  46  48  50  56  60  66  69  71  81  82  84  85  89  92  93  97 102 103 110 111 115 116 
+outliers_exp2_legit_support # position: 3  10  16  17  28  34  35  42  46  48  50  56  60  66  69  71  81  82  84  85  89  92  93  97 102 103 110 111 115 116 
+# => IDs: 017, 032, 057, 059, 088, 108, 109, 140, 151, 154, 160, 178, 186, 196, 210, 223, 225, 229, 253, 255, 257, 261, 269, 270, 282, 285, 295, 305, 312, 315, 319, 332, 334, 336, 347, 348
 
 glm_exp2_legit_support <- lm(support ~ legit, main_exp2)
 plot(glm_exp2_legit_support) # ID 10 68 72 (not crossing)
 
+# all outliers (uni- and multivariate, across all conditions)----
+# 014, 015, 017, 032,  038, 051, 054, 056, 057, 058, 059, 063, 072, 074, 084, 088, 089, 091, 099, 108, 109, 
+# 110 119, 123, 133, 138, 140, 146, 147, 151, 152, 154, 160, 171,178, 186, 195, 196, 210, 213, 223,225, 229, 
+# 234, 253, 255, 257, 261, 263, 267, 269, 270, 281, 282, 283, 285, 289, 292, 295, 305, 311, 312, 315, 319, 332, 
+# 334, 335, 336, 339, 347, 348
 
+scan(text="014 015 017 032 038 051 054 056 057 058 059 063 072 074 084 088 089 091 099 108 109 
+110 119 123 133 138 140 146 147 151 152 154 160 171 178 186 195 196 210 213 223 225 229 234 253 255 257 261 
+263 267 269 270 281 282 283 285 289 292 295 305 311 312 315 319 332 334 335 336 339 347 348", what="")
 
-# COMPARE UNI AND MULTIVARIATE OUTLIERS BY CONDITION AND SEE IF THEY OVERLAP --> FIND THOSE THAT MIGHT BE POTENTIALLY BEST EXCLUDED
+list_alloutliers <- c("014", "015", "017", "032", "038", "051", "054", "056", "057", "058", "059", "063", "072", "074", "084", "088", "089", "091", "099", "108", "109",
+                   "110", "119", "123", "133", "138", "140", "146", "147", "151", "152", "154", "160", "171", "178", "186", "195", "196", "210", "213", "223", "225",
+                   "229", "234", "253", "255", "257", "261", "263", "267", "269", "270", "281", "282", "283", "285", "289", "292", "295", "305", "311", "312", "315",
+                   "319", "332", "334","335" ,"336", "339", "347", "348")
 
+main1_sub_withoutanyoutliers <- main1_sub %>% # dataset without any of these outliers
+  filter(!id %in% list_alloutliers)
+
+# outliers with potentially strongest leverage (overlap uni- and multivariate outliers, between variables, across all conditions)----
+
+# 014, 015, 032, 056, 084, 089, 110, 138, 146,  152, 171, 223, 234, 267, 281, 283, 289, 311, 335
+
+scan(text = "014 015 032 056 084 089 110 138 146 152 171 223 234 267 281 283 289 311 335", what= "")
+
+list_outliers <- c("014", "015", "032", "056", "084", "089", "110", "138", "146", "152", "171", "223", "234", "267", "281", "283", "289", "311", "335")
+
+main1_sub_withoutoutliers <- main1_sub %>% # dataset without most crucial outliers (19 outliers)
+  filter(!id %in% list_outliers)
 
 
 ### main analysis - mediation----
