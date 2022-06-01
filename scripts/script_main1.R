@@ -395,7 +395,9 @@ main1_sub <- main1_sub %>% #new "condition" = "purpose" (= purpose guessed) vs "
                             id == "065"| id == "143"| id == "144"| id == "160"| id =="174"| id == "178"| id == "297"| 
                             id == "305", 1, 0))
 
-main_exp1 %>% # t.test by condition, subsets by condition were updated to include the new variable
+# subsets by condition need to updated (run again ll. 213 - 226) to include the new variable
+
+main_exp1 %>% # t.test by condition
   group_by(purpose) %>%
   summarise(mean = mean(support), sd = sd(support))
 
@@ -643,10 +645,11 @@ main1_sub <-data.frame(main1_sub,d1,d2)
 
 med_orgaeff <- process(data = main1_sub, y = "support", x = "cond", m = c("orgaeff", "legit"), mcx = 3, total = 1, model = 6, seed = 31522)
 
+# repeat without outliers
 
+# run the same model with stereo
 
-
-
+# repeat without outliers
 
 
 ### main analyses: H2 (conditional effects)
