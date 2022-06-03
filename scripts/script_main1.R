@@ -633,6 +633,7 @@ main1_sub_withoutoutliers <- main1_sub_withoutoutliers %>%
 main1_sub_withoutanyoutliers <- main1_sub_withoutanyoutliers %>%
   mutate(cond = as.numeric(cond))
 
+
 # Helmert contrast coding for condition (though option mcx = 3 will be applied which does the contrast coding automatically)
 
 d1<-(main1_sub$cond==0)*(-2/3)+(main1_sub$cond > 0)*(1/3)
@@ -641,15 +642,29 @@ main1_sub <-data.frame(main1_sub,d1,d2)
 
 # deviation from pre-registration: no mean-centering in mediation analysis 
 
-## main analysis
+## mediation analyses
 
 med_orgaeff <- process(data = main1_sub, y = "support", x = "cond", m = c("orgaeff", "legit"), mcx = 3, total = 1, model = 6, seed = 31522)
+med_orgaeff <- process(data = main1_sub, y = "support", x = "cond", m = c("orgaeff", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 31522) # increase bootstrap repetitions
 
 # repeat without outliers
+
+med_orgaeff_nooutliers <- process(data = main1_sub_withoutoutliers, y = "support", x = "cond", m = c("orgaeff", "legit"), mcx = 3, total = 1, model = 6, seed = 02622)
+med_orgaeff_nooutliers <- process(data = main1_sub_withoutoutliers, y = "support", x = "cond", m = c("orgaeff", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 02622)
+med_orgaeff_nooutliers <- process(data = main1_sub_withoutanyoutliers, y = "support", x = "cond", m = c("orgaeff", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 02622)
 
 # run the same model with stereo
 
+med_stereo <- process(data = main1_sub, y = "support", x = "cond", m = c("stereo", "legit"), mcx = 3, total = 1, model = 6, seed = 02622)
+med_stereo <- process(data = main1_sub, y = "support", x = "cond", m = c("stereo", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 02622)
+
 # repeat without outliers
+
+med_stereo_nooutliers <- process(data = main1_sub_withoutoutliers, y = "support", x = "cond", m = c("stereo", "legit"), mcx = 3, total = 1, model = 6, seed = 02622)
+med_stereo_nooutliers <- process(data = main1_sub_withoutoutliers, y = "support", x = "cond", m = c("stereo", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 02622)
+med_orgaeff_nooutliers <- process(data = main1_sub_withoutanyoutliers, y = "support", x = "cond", m = c("stereo", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 02622)
+
+# DOUBLECHECK OUTPUTS WITHOUT ANY OUTLIERS WITH GRAPHS BEFORE CONTINUING 
 
 
 ### main analyses: H2 (conditional effects)
