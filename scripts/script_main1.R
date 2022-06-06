@@ -388,6 +388,43 @@ t.test(main1_sub_comp_exp$stereo ~ main1_sub_comp_exp$cond) # n.s.
 t.test(main1_sub_comp_exp$legit ~ main1_sub_comp_exp$cond) # n.s.
 t.test(main1_sub_comp_exp$support ~ main1_sub_comp_exp$cond) # p = .05
 
+## comparison variables between conditions
+
+orgaeff.aov <- aov(orgaeff ~ cond, data = main1_sub) # sign.
+summary(orgaeff.aov)
+TukeyHSD(orgaeff.aov) # sign. between exp and control but not between exp
+
+leveneTest(orgaeff ~ cond, data = main1_sub) # sign, using Welch test instead
+
+oneway.test(orgaeff ~ cond, data = main1_sub) # sign.
+orgaeff.pairwise.t.test <- pairwise.t.test(main1_sub$orgaeff, main1_sub$cond,
+                                         p.adjust.method = "BH", pool.sd = FALSE) # pairwise comparison (with no assumption of equal variances)
+orgaeff.pairwise.t.test # sign. between control and exp
+
+
+legit.aov <- aov(legit ~ cond, data = main1_sub)
+summary(legit.aov)
+TukeyHSD(legit.aov) # sign between exp2 and control
+
+leveneTest(legit ~ cond, data = main1_sub) # n.s.
+
+
+
+support.aov <- aov(support ~ cond, data = main1_sub)
+summary(support.aov)
+TukeyHSD(support.aov) # sign between exp2 and control
+
+leveneTest(support ~ cond, data = main1_sub) # n.s.
+
+
+stereo.aov <- aov(stereo ~ cond, data = main1_sub) 
+summary(stereo.aov) # sign.
+TukeyHSD(stereo.aov) # sign. between exp and control but not between exp
+
+leveneTest(stereo ~ cond, data = main1_sub) # n.s.
+
+
+
 ### filter  and compare participants that were relatively close to guessing the purpose of the experiment----
 
 main1_sub <- main1_sub %>% #new "condition" = "purpose" (= purpose guessed) vs "no purpose" (purposed not guessed)
@@ -614,6 +651,47 @@ list_outliers <- c("014", "015", "032", "056", "084", "089", "110", "138", "146"
 main1_sub_withoutoutliers <- main1_sub %>% # dataset without most crucial outliers (19 outliers)
   filter(!id %in% list_outliers)
 
+### repeating variable comparisons between all conditions without outliers----
+
+orgaeff_noout.aov <- aov(orgaeff ~ cond, data = main1_sub_withoutanyoutliers) 
+summary(orgaeff_noout.aov) # sign.
+TukeyHSD(orgaeff_noout.aov) # sign. between exp and control but not between exp
+
+leveneTest(orgaeff ~ cond, data = main1_sub_withoutanyoutliers) # sign, using Welch test instead
+oneway.test(orgaeff ~ cond, data = main1_sub_withoutanyoutliers) # sign.
+orgaeff_noout.pairwise.t.test <- pairwise.t.test(main1_sub_withoutanyoutliers$orgaeff, main1_sub_withoutanyoutliers$cond,
+                                           p.adjust.method = "BH", pool.sd = FALSE) # pairwise comparison (with no assumption of equal variances)
+orgaeff_noout.pairwise.t.test # sign. between exp and control but not between exp
+
+
+legit_noout.aov <- aov(legit ~ cond, data = main1_sub_withoutanyoutliers)
+summary(legit_noout.aov) # sign.
+TukeyHSD(legit_noout.aov) # sign between all contrasts
+
+leveneTest(legit ~ cond, data = main1_sub_withoutanyoutliers) # n.s.
+
+support_noout.aov <- aov(support ~ cond, data = main1_sub_withoutanyoutliers)
+summary(support_noout.aov) # sign.
+TukeyHSD(support_noout.aov) # sign between all contrasts
+
+leveneTest(support ~ cond, data = main1_sub_withoutanyoutliers) # sign. using Welch test instead
+oneway.test(support ~ cond, data = main1_sub_withoutanyoutliers) # sign.
+support_noout.pairwise.t.test <- pairwise.t.test(main1_sub_withoutanyoutliers$support, main1_sub_withoutanyoutliers$cond,
+                                                 p.adjust.method = "BH", pool.sd = FALSE) # pairwise comparison (with no assumption of equal variances)
+support_noout.pairwise.t.test # sign. between all contrasts
+
+stereo_noout.aov <- aov(stereo ~ cond, data = main1_sub_withoutanyoutliers) 
+summary(stereo_noout.aov) # sign.
+TukeyHSD(stereo_noout.aov) # sign. between exp and control but not between exp
+
+leveneTest(stereo ~ cond, data = main1_sub_withoutanyoutliers) # sign., using Welch test instead
+oneway.test(stereo ~ cond, data = main1_sub_withoutanyoutliers) # sign.
+stereo_noout.pairwise.t.test <- pairwise.t.test(main1_sub_withoutanyoutliers$stereo, main1_sub_withoutanyoutliers$cond,
+                                                 p.adjust.method = "BH", pool.sd = FALSE) # pairwise comparison (with no assumption of equal variances)
+stereo_noout.pairwise.t.test # sign. between all contrasts
+
+
+
 
 ### import process function----
 
@@ -663,8 +741,6 @@ med_stereo <- process(data = main1_sub, y = "support", x = "cond", m = c("stereo
 med_stereo_nooutliers <- process(data = main1_sub_withoutoutliers, y = "support", x = "cond", m = c("stereo", "legit"), mcx = 3, total = 1, model = 6, seed = 02622)
 med_stereo_nooutliers <- process(data = main1_sub_withoutoutliers, y = "support", x = "cond", m = c("stereo", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 02622)
 med_orgaeff_nooutliers <- process(data = main1_sub_withoutanyoutliers, y = "support", x = "cond", m = c("stereo", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 02622)
-
-# DOUBLECHECK OUTPUTS WITHOUT ANY OUTLIERS WITH GRAPHS BEFORE CONTINUING 
 
 
 ### main analyses: H2 (conditional effects)
