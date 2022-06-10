@@ -423,16 +423,12 @@ TukeyHSD(stereo.aov) # sign. between exp and control but not between exp
 
 leveneTest(stereo ~ cond, data = main1_sub) # n.s.
 
-
-
 ### filter  and compare participants that were relatively close to guessing the purpose of the experiment----
 
 main1_sub <- main1_sub %>% #new "condition" = "purpose" (= purpose guessed) vs "no purpose" (purposed not guessed)
   mutate(purpose = ifelse(id ==  "042"| id == "159"| id == "163"| id == "313" | id == "339"| id == "354"| id =="357"|
                             id == "065"| id == "143"| id == "144"| id == "160"| id =="174"| id == "178"| id == "297"| 
-                            id == "305", 1, 0))
-
-# subsets by condition need to updated (run again ll. 213 - 226) to include the new variable
+                            id == "305", 1, 0)) # no participants from control group
 
 main_exp1 %>% # t.test by condition
   group_by(purpose) %>%
@@ -444,6 +440,17 @@ main_exp2 %>%
 
 t.test(main_exp1$support ~ main_exp1$purpose, var.equal = FALSE) # n.s.
 t.test(main_exp2$support ~ main_exp2$purpose, var.equal = FALSE) # n.s.
+
+# subsets by condition need to updated (run again ll. 213 - 226) to include the new variable
+
+main_control <- main1_sub %>% # subgroup condition = control
+  filter(cond == "0")
+
+main_exp1 <- main1_sub %>% # subgroup condition = experimental condition 1
+  filter(cond == "1")
+
+main_exp2 <- main1_sub %>% # subgroup condition = experimental condition 2
+  filter(cond == "2")
 
 ### intercorrelations----
 
@@ -669,6 +676,7 @@ summary(legit_noout.aov) # sign.
 TukeyHSD(legit_noout.aov) # sign between all contrasts
 
 leveneTest(legit ~ cond, data = main1_sub_withoutanyoutliers) # n.s.
+main1_sub_withoutanyoutliers %>% group_by(cond) %>% summarise(mean = mean(legit), sd = sd(legit))
 
 support_noout.aov <- aov(support ~ cond, data = main1_sub_withoutanyoutliers)
 summary(support_noout.aov) # sign.
@@ -690,8 +698,8 @@ stereo_noout.pairwise.t.test <- pairwise.t.test(main1_sub_withoutanyoutliers$ste
                                                  p.adjust.method = "BH", pool.sd = FALSE) # pairwise comparison (with no assumption of equal variances)
 stereo_noout.pairwise.t.test # sign. between all contrasts
 
-
-
+main1_sub_withoutanyoutliers %>% filter(cond == "1") %>% summarise(mean = mean(stereo), sd = sd(stereo))
+main1_sub_withoutanyoutliers %>% filter(cond == "2") %>% summarise(mean = mean(stereo), sd = sd(stereo))
 
 ### import process function----
 
@@ -710,7 +718,6 @@ main1_sub_withoutoutliers <- main1_sub_withoutoutliers %>%
 
 main1_sub_withoutanyoutliers <- main1_sub_withoutanyoutliers %>%
   mutate(cond = as.numeric(cond))
-
 
 # Helmert contrast coding for condition (though option mcx = 3 will be applied which does the contrast coding automatically)
 
