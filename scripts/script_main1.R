@@ -409,7 +409,6 @@ TukeyHSD(legit.aov) # sign between exp2 and control
 leveneTest(legit ~ cond, data = main1_sub) # n.s.
 
 
-
 support.aov <- aov(support ~ cond, data = main1_sub)
 summary(support.aov)
 TukeyHSD(support.aov) # sign between exp2 and control
@@ -441,7 +440,7 @@ main_exp2 %>%
 t.test(main_exp1$support ~ main_exp1$purpose, var.equal = FALSE) # n.s.
 t.test(main_exp2$support ~ main_exp2$purpose, var.equal = FALSE) # n.s.
 
-# subsets by condition need to updated (run again ll. 213 - 226) to include the new variable
+# subsets by condition need to updated
 
 main_control <- main1_sub %>% # subgroup condition = control
   filter(cond == "0")
@@ -750,7 +749,7 @@ med_stereo_nooutliers <- process(data = main1_sub_withoutoutliers, y = "support"
 med_orgaeff_nooutliers <- process(data = main1_sub_withoutanyoutliers, y = "support", x = "cond", m = c("stereo", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 02622)
 
 
-### main analyses: H2 (conditional effects)
+### main analyses: H2 (conditional effects)----
 
 # The plot option in PROCESS for R produces a table of data for visualizing
 # an interaction but, like the SAS version, does not write any R
