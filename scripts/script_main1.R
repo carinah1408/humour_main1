@@ -751,6 +751,19 @@ med_orgaeff_nooutliers <- process(data = main1_sub_withoutanyoutliers, y = "supp
 
 ### main analyses: H2 (conditional effects)----
 
+## moderated mediation
+
+# M1 = orgaeff
+mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
+# deviation to pre-reg: all mediators were mean-centred
+
+# repeat without outliers
+mod_orgaeff <- process (data=main1_sub_withoutanyoutliers, y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
+
+
+
+
+
 # The plot option in PROCESS for R produces a table of data for visualizing
 # an interaction but, like the SAS version, does not write any R
 # code to produce the plot, nor will PROCESS produce a plot in the R
