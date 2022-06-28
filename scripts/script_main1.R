@@ -758,15 +758,14 @@ mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "leg
 # deviation to pre-reg: all mediators were mean-centred
 
 # repeat without outliers
-mod_orgaeff <- process (data=main1_sub_withoutanyoutliers, y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
+mod_orgaeff_nooutliers <- process (data=main1_sub_withoutanyoutliers, y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
+
+# M1 = stereo
+mod_stereo <- process (data=main1_sub,y="support",x="cond",m= c("stereo", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=28622)
+
+# repeat without outliers
+mod_stereo_nooutliers <- process (data=main1_sub_withoutanyoutliers, y="support",x="cond",m= c("stereo", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=28622)
 
 
-
-
-
-# The plot option in PROCESS for R produces a table of data for visualizing
-# an interaction but, like the SAS version, does not write any R
-# code to produce the plot, nor will PROCESS produce a plot in the R
-# window.
 
 
