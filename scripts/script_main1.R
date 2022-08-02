@@ -783,7 +783,7 @@ mod_stereo_nooutliers <- process (data=main1_sub_withoutanyoutliers, y="support"
 ## significance level or  valence), OLS regression in process seems to be robust against outliers (report 
 ## bootstrap coeffcicients from OLS in process)
 
-# Helmert contrast coding for condition 
+# Helmert contrast coding for condition ---- 
 
 d1<-(main1_sub$cond==0)*(-2/3)+(main1_sub$cond > 0)*(1/3)
 d2<-(main1_sub$cond==1)*(-1/2)+(main1_sub$cond==2)*(1/2)
@@ -792,9 +792,12 @@ main1_sub <-data.frame(main1_sub,d1,d2)
 helmert = matrix(c(-2/3, 1/3, 1/3, 0, -.5, .5), ncol = 2)
 helmert
 
+main1_sub <- main1_sub %>%
+  mutate(cond = as.factor(cond)) # contrasts requires cond to be a factor 
+
 contrasts(main1_sub$cond) = helmert
 
-# mediation (orgaeff = M1)
+# mediation (orgaeff = M1) ----
 
 # regression 1 
 med_orgaeff_lm1 <- lm(orgaeff ~ cond, data = main1_sub)
@@ -896,3 +899,117 @@ med_orgaeff_lmrob3 <- lmrob(support ~ cond + orgaeff + legit, data = main1_sub)
 summary(med_orgaeff_lmrob3) # no signficant or valence changes
 confint(med_orgaeff_lmrob3)
 
+
+# mediation (stereo = M1) ----
+
+helmert = matrix(c(-2/3, 1/3, 1/3, 0, -.5, .5), ncol = 2)
+helmert
+
+main1_sub <- main1_sub %>%
+  mutate(cond = as.factor(cond)) 
+
+contrasts(main1_sub$cond) = helmert
+
+# regression 1 
+med_stereo_lm1 <- lm(stereo ~ cond, data = main1_sub)
+summary(med_stereo_lm1)
+
+med_stereo_lm1_cooksd <- cooks.distance(med_stereo_lm1)
+
+plot(med_stereo_lm1_cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance") +  # plot cook's distance
+  abline(h = 4*mean(med_stereo_lm1_cooksd, na.rm=T), col="red") + # add cutoff line
+  text(x=1:length(med_stereo_lm1_cooksd)+1, y=med_stereo_lm1_cooksd, labels=ifelse(med_stereo_lm1_cooksd>4*mean(med_stereo_lm1_cooksd, na.rm=T),names(med_stereo_lm1_cooksd),""), col="red")  # add labels
+
+# => 16 outliers: ID 37, 46, 56, 138, 146, 149, 172, 182, 220, 224, 256, 276, 296, 297,  311, 325
+
+influential <- as.numeric(names(med_stereo_lm1_cooksd)[(med_stereo_lm1_cooksd > 4*mean(med_stereo_lm1_cooksd, na.rm=T))])  # influential row numbers
+head(main1_sub[influential, ], n = 16)  # influential observations.
+
+car::outlierTest(med_stereo_lm1) # most extreme outlier = ID 56 
+
+# run again without outliers 
+
+noutliers5 <- c("037", "046", "056", "138", "146", "149", "172", "182", "220", "224", "256", "276", "296", "297",  "311", "325")
+
+main1_sub_noutliers5 <- main1_sub %>%
+  filter(!id %in% noutliers5)
+
+med_stereo_lm1_nout <- lm(stereo ~ cond, data = main1_sub_noutliers5)
+summary(med_stereo_lm1_nout) # no significant or valence changes
+
+# robust regression 1
+
+med_stereo_lmrob1 <- lmrob(stereo ~ cond, data = main1_sub)
+summary(med_stereo_lmrob1) # no significant or valence changes
+confint(med_stereo_lmrob1)
+
+# regression 2
+
+med_stereo_lm2 <- lm(legit ~ cond + stereo, data = main1_sub)
+summary(med_stereo_lm2)
+
+med_stereo_lm2_cooksd <- cooks.distance(med_stereo_lm2)
+
+plot(med_stereo_lm2_cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance") +  # plot cook's distance
+  abline(h = 4*mean(med_stereo_lm2_cooksd, na.rm=T), col="red") + # add cutoff line
+  text(x=1:length(med_stereo_lm2_cooksd)+1, y=med_stereo_lm2_cooksd, labels=ifelse(med_stereo_lm2_cooksd>4*mean(med_stereo_lm2_cooksd, na.rm=T),names(med_stereo_lm2_cooksd),""), col="red")  # add labels
+
+# => 17 outliers: ID 11, 53, 56, 58, 73, 89, 110, 114, 138, 146, 171, 195, 223, 289, 296, 330, 335
+
+influential <- as.numeric(names(med_stereo_lm2_cooksd)[(med_stereo_lm2_cooksd > 4*mean(med_stereo_lm2_cooksd, na.rm=T))])  # influential row numbers
+head(main1_sub[influential, ], n = 17)  # influential observations.
+
+car::outlierTest(med_stereo_lm2) # most extreme outlier = ID 58 
+
+# run again without outliers 
+
+noutliers6 <- c("011", "053", "056", "058", "073", "089", "110", "114", "138", "146", "171", "195", "223", "289", "296", "330", "335")
+
+main1_sub_noutliers6 <- main1_sub %>%
+  filter(!id %in% noutliers6)
+
+med_stereo_lm2_nout <- lm(legit ~ cond + stereo, data = main1_sub_noutliers6)
+summary(med_stereo_lm2_nout) # cond2 now turns significant, the rest remains the same
+
+# robust regression 2
+
+med_stereo_lmrob2 <- lmrob(legit ~ cond + stereo, data = main1_sub)
+summary(med_stereo_lmrob2) # no significant or valence changes
+confint(med_stereo_lmrob2)
+
+# regression 3
+
+med_stereo_lm3 <- lm(support ~ cond + stereo + legit, data = main1_sub)
+summary(med_stereo_lm3)
+
+med_stereo_lm3_cooksd <- cooks.distance(med_stereo_lm3)
+
+plot(med_stereo_lm3_cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance") +  # plot cook's distance
+  abline(h = 4*mean(med_stereo_lm3_cooksd, na.rm=T), col="red") + # add cutoff line
+  text(x=1:length(med_stereo_lm3_cooksd)+1, y=med_stereo_lm3_cooksd, labels=ifelse(med_stereo_lm3_cooksd>4*mean(med_stereo_lm3_cooksd, na.rm=T),names(med_stereo_lm3_cooksd),""), col="red")  # add labels
+
+# => 14 outliers: ID 15, 52, 53, 79, 91, 111, 220, 227, 234, 243, 245, 281, 283, 357
+
+influential <- as.numeric(names(med_stereo_lm3_cooksd)[(med_stereo_lm3_cooksd > 4*mean(med_stereo_lm3_cooksd, na.rm=T))])  # influential row numbers
+head(main1_sub[influential, ], n = 14)  # influential observations.
+
+car::outlierTest(med_stereo_lm3) # most extreme outlier = ID 283 
+
+# run again without outliers 
+
+noutliers7 <- c("015", "052", "053", "079", "091", "111", "220", "227", "234", "243", "245", "281", "283", "357")
+
+main1_sub_noutliers7 <- main1_sub %>%
+  filter(!id %in% noutliers7)
+
+med_stereo_lm3_nout <- lm(support ~ cond + stereo + legit, data = main1_sub_noutliers7)
+summary(med_stereo_lm3_nout) # cond1 and stereo now turn significant too
+
+# robust regression 3
+
+med_stereo_lmrob3 <- lmrob(support ~ cond + stereo + legit, data = main1_sub)
+summary(med_stereo_lmrob3) # no significant or valence changes
+confint(med_stereo_lmrob3)
+
+
+# moderation (orgaeff = M1) ----
