@@ -429,7 +429,17 @@ main1_sub <- main1_sub %>% #new "condition" = "purpose" (= purpose guessed) vs "
                             id == "065"| id == "143"| id == "144"| id == "160"| id =="174"| id == "178"| id == "297"| 
                             id == "305", 1, 0)) # no participants from control group
 
-main_exp1 %>% # t.test by condition
+main_exp1 <- main_exp1 %>% mutate(purpose = ifelse(id ==  "042"| id == "159"| id == "163"| id == "313" | id == "339"| id == "354"| id =="357"|
+                            id == "065"| id == "143"| id == "144"| id == "160"| id =="174"| id == "178"| id == "297"| 
+                            id == "305", 1, 0)) # no participants from control group
+
+main_exp2 <- main_exp2 %>% mutate(purpose = ifelse(id ==  "042"| id == "159"| id == "163"| id == "313" | id == "339"| id == "354"| id =="357"|
+                                                     id == "065"| id == "143"| id == "144"| id == "160"| id =="174"| id == "178"| id == "297"| 
+                                                     id == "305", 1, 0)) # no participants from control group
+
+
+
+main_exp1 %>% main1_sub # t.test by condition
   group_by(purpose) %>%
   summarise(mean = mean(support), sd = sd(support))
 
@@ -718,15 +728,9 @@ main1_sub_withoutoutliers <- main1_sub_withoutoutliers %>%
 main1_sub_withoutanyoutliers <- main1_sub_withoutanyoutliers %>%
   mutate(cond = as.numeric(cond))
 
-# Helmert contrast coding for condition (though option mcx = 3 will be applied which does the contrast coding automatically)
-
-d1<-(main1_sub$cond==0)*(-2/3)+(main1_sub$cond > 0)*(1/3)
-d2<-(main1_sub$cond==1)*(-1/2)+(main1_sub$cond==2)*(1/2)
-main1_sub <-data.frame(main1_sub,d1,d2)
-
 # deviation from pre-registration: no mean-centering in mediation analysis 
 
-## mediation analyses
+## mediation analyses (option mcx = 3 will be applied which does the contrast coding automatically)
 
 med_orgaeff <- process(data = main1_sub, y = "support", x = "cond", m = c("orgaeff", "legit"), mcx = 3, total = 1, model = 6, seed = 31522)
 med_orgaeff <- process(data = main1_sub, y = "support", x = "cond", m = c("orgaeff", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 31522) # increase bootstrap repetitions
@@ -767,5 +771,127 @@ mod_stereo <- process (data=main1_sub,y="support",x="cond",m= c("stereo", "legit
 mod_stereo_nooutliers <- process (data=main1_sub_withoutanyoutliers, y="support",x="cond",m= c("stereo", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=28622)
 
 
+### alternative outliers ---- 
 
+## deviation from pre-reg: alternative way of establishing and comparing/ removing the influence of outliers (here; model-specific outliers): replicating models in lm format
 
+# Helmert contrast coding for condition 
+
+d1<-(main1_sub$cond==0)*(-2/3)+(main1_sub$cond > 0)*(1/3)
+d2<-(main1_sub$cond==1)*(-1/2)+(main1_sub$cond==2)*(1/2)
+main1_sub <-data.frame(main1_sub,d1,d2)
+
+helmert = matrix(c(-2/3, 1/3, 1/3, 0, -.5, .5), ncol = 2)
+helmert
+
+contrasts(main1_sub$cond) = helmert
+
+# mediation (orgaeff = M1)
+
+# regression 1 
+med_orgaeff_lm1 <- lm(orgaeff ~ cond, data = main1_sub)
+summary(med_orgaeff_lm1)
+
+med_orgaeff_lm1_cooksd <- cooks.distance(med_orgaeff_lm1)
+
+plot(med_orgaeff_lm1_cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance") +  # plot cook's distance
+  abline(h = 4*mean(med_orgaeff_lm1_cooksd, na.rm=T), col="red") + # add cutoff line
+  text(x=1:length(med_orgaeff_lm1_cooksd)+1, y=med_orgaeff_lm1_cooksd, labels=ifelse(med_orgaeff_lm1_cooksd>4*mean(med_orgaeff_lm1_cooksd, na.rm=T),names(med_orgaeff_lm1_cooksd),""), col="red")  # add labels
+
+# => 9 outliers: ID 14, 38, 56, 72, 80, 147, 213, 335, 360
+
+influential <- as.numeric(names(med_orgaeff_lm1_cooksd)[(med_orgaeff_lm1_cooksd > 4*mean(med_orgaeff_lm1_cooksd, na.rm=T))])  # influential row numbers
+head(main1_sub[influential, ])  # influential observations.
+
+car::outlierTest(med_orgaeff_lm1) # most extreme outlier = ID 56 (scores are extremely low)
+
+# run again without outliers 
+
+noutliers1 <- c("014", "038", "056", "072", "080", "147", "213", "335", "360")
+
+main1_sub_noutliers1 <- main1_sub %>%
+  filter(!id %in% noutliers1)
+
+med_orgaeff_lm1_nout <- lm(orgaeff ~ cond, data = main1_sub_noutliers1)
+summary(med_orgaeff_lm1_nout) # no significant or valence changes
+
+# vs robust regression
+
+library(robustbase)
+med_orgaeff_lmrob1 <- lmrob(orgaeff ~ cond, data = main1_sub)
+summary(med_orgaeff_lmrob1) # no significant or valence changes
+
+# regression 2
+
+med_orgaeff_lm2 <- lm(legit ~ cond + orgaeff, data = main1_sub)
+summary(med_orgaeff_lm2)
+med_orgaeff_lm2_cooksd <- cooks.distance(med_orgaeff_lm2)
+
+plot(med_orgaeff_lm2_cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance") +  # plot cook's distance
+  abline(h = 4*mean(med_orgaeff_lm2_cooksd, na.rm=T), col="red") + # add cutoff line
+  text(x=1:length(med_orgaeff_lm2_cooksd)+1, y=med_orgaeff_lm2_cooksd, labels=ifelse(med_orgaeff_lm2_cooksd>4*mean(med_orgaeff_lm2_cooksd, na.rm=T),names(med_orgaeff_lm2_cooksd),""), col="red")  # add labels
+
+# => 15 outliers: ID 46, 48, 89, 110, 114, 138, 146, 171, 223, 244, 267, 269, 289, 297, 335
+
+influential <- as.numeric(names(med_orgaeff_lm2_cooksd)[(med_orgaeff_lm2_cooksd > 4*mean(med_orgaeff_lm2_cooksd, na.rm=T))])  # influential row numbers
+head(main1_sub[influential, ])  # influential observations.
+
+car::outlierTest(med_orgaeff_lm2) # most extreme outlier = ID 289 
+
+# run again without outliers
+
+noutliers2 <- c("046", "048", "089", "110", "114", "138", "146", "171", "223", "244", "267", "269", "289", "297", "335")
+
+main1_sub_noutliers2 <- main1_sub %>%
+  filter(!id %in% noutliers2)
+
+med_orgaeff_lm2_nout <- lm(legit ~ cond + orgaeff, data = main1_sub_noutliers2)
+summary(med_orgaeff_lm2_nout) # no significant or valence changes
+
+# vs robust regression 
+med_orgaeff_lmrob2 <- lmrob(legit ~ cond + orgaeff, data = main1_sub)
+summary(med_orgaeff_lmrob2) # no significant or valence changes
+
+# regression 3
+med_orgaeff_lm3 <- lm(support ~ cond + orgaeff + legit, data = main1_sub)
+summary(med_orgaeff_lm3)
+med_orgaeff_lm3_cooksd <- cooks.distance(med_orgaeff_lm3)
+
+plot(med_orgaeff_lm3_cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance") +  # plot cook's distance
+  abline(h = 4*mean(med_orgaeff_lm3_cooksd, na.rm=T), col="red") + # add cutoff line
+  text(x=1:length(med_orgaeff_lm3_cooksd)+1, y=med_orgaeff_lm3_cooksd, labels=ifelse(med_orgaeff_lm3_cooksd>4*mean(med_orgaeff_lm3_cooksd, na.rm=T),names(med_orgaeff_lm3_cooksd),""), col="red")  # add labels
+
+# => 17 outliers: ID 4, 6, 15, 34, 80, 81, 169, 180, 201, 212, 220, 234, 243, 245, 261, 283, 357
+
+# replicating regression models with robust regression (to eliminate the influence of outliers)
+
+influential <- as.numeric(names(med_orgaeff_lm3_cooksd)[(med_orgaeff_lm3_cooksd > 4*mean(med_orgaeff_lm3_cooksd, na.rm=T))])  # influential row numbers
+head(main1_sub[influential, ])  # influential observations.
+
+car::outlierTest(med_orgaeff_lm3) # most extreme outlier = ID 283 
+
+# run again without outliers
+
+noutliers3 <- c("004", "006", "015", "034", "080", "081", "169", "180", "201", "212", "220", "234", "243", "245", "261", "283", "357")
+
+main1_sub_noutliers3 <- main1_sub %>%
+  filter(!id %in% noutliers3)
+
+med_orgaeff_lm3_nout <- lm(support ~ cond + orgaeff + legit, data = main1_sub_noutliers3)
+summary(med_orgaeff_lm3_nout) # no significant or valence changes
+
+# vs robust regression
+
+med_orgaeff_lmrob3 <- lmrob(support ~ cond + orgaeff + legit, data = main1_sub)
+summary(med_orgaeff_lmrob3) # no signficant or valence changes
+
+# replicating the mediation model excluding all three model-specific outliers
+
+noutliers4 <- c("004", "006", "014", "015", "034", "038", "046", "048","056", "072", "080", "081", "089", "110", "114", "138", "146", "147", "169", "171", "180", "201", "212","213", "220", "223","234", "335", "243", "244","245", "261", "267", "269", "283","289", "297", "335","357","360")
+main1_sub_noutliers4 <- main1_sub %>%
+  filter(!id %in% noutliers4)
+
+main1_sub_noutliers4 <- main1_sub_noutliers4 %>%
+  mutate(cond = as.numeric(cond))
+
+med_orgaeff_noutiers4 <- process(data = main1_sub_noutliers4, y = "support", x = "cond", m = c("orgaeff", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 31522) 
