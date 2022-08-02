@@ -730,10 +730,11 @@ main1_sub_withoutanyoutliers <- main1_sub_withoutanyoutliers %>%
 
 # deviation from pre-registration: no mean-centering in mediation analysis 
 
-## mediation analyses (option mcx = 3 will be applied which does the contrast coding automatically)
+## mediation analyses (option mcx = 3 will be applied which does the contrast coding automatically, modelbt = 1 applies robust measures)
 
 med_orgaeff <- process(data = main1_sub, y = "support", x = "cond", m = c("orgaeff", "legit"), mcx = 3, total = 1, model = 6, seed = 31522)
 med_orgaeff <- process(data = main1_sub, y = "support", x = "cond", m = c("orgaeff", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 31522) # increase bootstrap repetitions
+med_orgaeff <- process(data = main1_sub, y = "support", x = "cond", m = c("orgaeff", "legit"), modelbt =1, mcx = 3, total = 1, model = 6, boot = 10000, seed = 31522) 
 
 # repeat without outliers
 
@@ -745,6 +746,8 @@ med_orgaeff_nooutliers <- process(data = main1_sub_withoutanyoutliers, y = "supp
 
 med_stereo <- process(data = main1_sub, y = "support", x = "cond", m = c("stereo", "legit"), mcx = 3, total = 1, model = 6, seed = 02622)
 med_stereo <- process(data = main1_sub, y = "support", x = "cond", m = c("stereo", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 02622)
+med_stereo <- process(data = main1_sub, y = "support", x = "cond", m = c("stereo", "legit"), modelbt = 1, mcx = 3, total = 1, model = 6, boot = 10000, seed = 02622)
+
 
 # repeat without outliers
 
@@ -773,7 +776,12 @@ mod_stereo_nooutliers <- process (data=main1_sub_withoutanyoutliers, y="support"
 
 ### alternative outliers ---- 
 
-## deviation from pre-reg: alternative way of establishing and comparing/ removing the influence of outliers (here; model-specific outliers): replicating models in lm format
+## deviation from pre-reg: alternative way of establishing and removing the influence of outliers (here; model-specific outliers): 
+## 1. replicate models in lm format and establish regression-model-specific outliers
+## 2. run with and without outliers to establish whether outliers are influential cases (significance, valence etc)
+## 3. run robust regression and compare with OLS regression results in process, if more or less the same (i.e., no substantial changes in
+## significance level or  valence), OLS regression in process seems to be robust against outliers (report 
+## bootstrap coeffcicients from OLS in process)
 
 # Helmert contrast coding for condition 
 
@@ -798,10 +806,10 @@ plot(med_orgaeff_lm1_cooksd, pch="*", cex=2, main="Influential Obs by Cooks dist
   abline(h = 4*mean(med_orgaeff_lm1_cooksd, na.rm=T), col="red") + # add cutoff line
   text(x=1:length(med_orgaeff_lm1_cooksd)+1, y=med_orgaeff_lm1_cooksd, labels=ifelse(med_orgaeff_lm1_cooksd>4*mean(med_orgaeff_lm1_cooksd, na.rm=T),names(med_orgaeff_lm1_cooksd),""), col="red")  # add labels
 
-# => 9 outliers: ID 14, 38, 56, 72, 80, 147, 213, 335, 360
+# => 9 outliers: ID 14, 38, 56, 72, 80, 147, 213, 335, 360 (those in control condition = low orgaeff; those in exp1 and exp2 = high orgaeff)
 
 influential <- as.numeric(names(med_orgaeff_lm1_cooksd)[(med_orgaeff_lm1_cooksd > 4*mean(med_orgaeff_lm1_cooksd, na.rm=T))])  # influential row numbers
-head(main1_sub[influential, ])  # influential observations.
+head(main1_sub[influential, ], n = 9)  # influential observations.
 
 car::outlierTest(med_orgaeff_lm1) # most extreme outlier = ID 56 (scores are extremely low)
 
@@ -815,11 +823,12 @@ main1_sub_noutliers1 <- main1_sub %>%
 med_orgaeff_lm1_nout <- lm(orgaeff ~ cond, data = main1_sub_noutliers1)
 summary(med_orgaeff_lm1_nout) # no significant or valence changes
 
-# vs robust regression
+# robust regression 1
 
 library(robustbase)
 med_orgaeff_lmrob1 <- lmrob(orgaeff ~ cond, data = main1_sub)
 summary(med_orgaeff_lmrob1) # no significant or valence changes
+confint(med_orgaeff_lmrob1)
 
 # regression 2
 
@@ -831,10 +840,10 @@ plot(med_orgaeff_lm2_cooksd, pch="*", cex=2, main="Influential Obs by Cooks dist
   abline(h = 4*mean(med_orgaeff_lm2_cooksd, na.rm=T), col="red") + # add cutoff line
   text(x=1:length(med_orgaeff_lm2_cooksd)+1, y=med_orgaeff_lm2_cooksd, labels=ifelse(med_orgaeff_lm2_cooksd>4*mean(med_orgaeff_lm2_cooksd, na.rm=T),names(med_orgaeff_lm2_cooksd),""), col="red")  # add labels
 
-# => 15 outliers: ID 46, 48, 89, 110, 114, 138, 146, 171, 223, 244, 267, 269, 289, 297, 335
+# => 15 outliers: ID 46, 48, 89, 110, 114, 138, 146, 171, 223, 244, 267, 269, 289, 297, 335 (no obvious pattern observable)
 
 influential <- as.numeric(names(med_orgaeff_lm2_cooksd)[(med_orgaeff_lm2_cooksd > 4*mean(med_orgaeff_lm2_cooksd, na.rm=T))])  # influential row numbers
-head(main1_sub[influential, ])  # influential observations.
+head(main1_sub[influential, ], n = 15)  # influential observations.
 
 car::outlierTest(med_orgaeff_lm2) # most extreme outlier = ID 289 
 
@@ -848,9 +857,10 @@ main1_sub_noutliers2 <- main1_sub %>%
 med_orgaeff_lm2_nout <- lm(legit ~ cond + orgaeff, data = main1_sub_noutliers2)
 summary(med_orgaeff_lm2_nout) # no significant or valence changes
 
-# vs robust regression 
+# robust regression 2
 med_orgaeff_lmrob2 <- lmrob(legit ~ cond + orgaeff, data = main1_sub)
 summary(med_orgaeff_lmrob2) # no significant or valence changes
+confint(med_orgaeff_lmrob2)
 
 # regression 3
 med_orgaeff_lm3 <- lm(support ~ cond + orgaeff + legit, data = main1_sub)
@@ -866,7 +876,7 @@ plot(med_orgaeff_lm3_cooksd, pch="*", cex=2, main="Influential Obs by Cooks dist
 # replicating regression models with robust regression (to eliminate the influence of outliers)
 
 influential <- as.numeric(names(med_orgaeff_lm3_cooksd)[(med_orgaeff_lm3_cooksd > 4*mean(med_orgaeff_lm3_cooksd, na.rm=T))])  # influential row numbers
-head(main1_sub[influential, ])  # influential observations.
+head(main1_sub[influential, ], n = 17)  # influential observations.
 
 car::outlierTest(med_orgaeff_lm3) # most extreme outlier = ID 283 
 
@@ -880,18 +890,9 @@ main1_sub_noutliers3 <- main1_sub %>%
 med_orgaeff_lm3_nout <- lm(support ~ cond + orgaeff + legit, data = main1_sub_noutliers3)
 summary(med_orgaeff_lm3_nout) # no significant or valence changes
 
-# vs robust regression
+# robust regression 3
 
 med_orgaeff_lmrob3 <- lmrob(support ~ cond + orgaeff + legit, data = main1_sub)
 summary(med_orgaeff_lmrob3) # no signficant or valence changes
+confint(med_orgaeff_lmrob3)
 
-# replicating the mediation model excluding all three model-specific outliers
-
-noutliers4 <- c("004", "006", "014", "015", "034", "038", "046", "048","056", "072", "080", "081", "089", "110", "114", "138", "146", "147", "169", "171", "180", "201", "212","213", "220", "223","234", "335", "243", "244","245", "261", "267", "269", "283","289", "297", "335","357","360")
-main1_sub_noutliers4 <- main1_sub %>%
-  filter(!id %in% noutliers4)
-
-main1_sub_noutliers4 <- main1_sub_noutliers4 %>%
-  mutate(cond = as.numeric(cond))
-
-med_orgaeff_noutiers4 <- process(data = main1_sub_noutliers4, y = "support", x = "cond", m = c("orgaeff", "legit"), mcx = 3, total = 1, model = 6, boot = 10000, seed = 31522) 
