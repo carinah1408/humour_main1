@@ -763,6 +763,7 @@ med_orgaeff_nooutliers <- process(data = main1_sub_withoutanyoutliers, y = "supp
 # M1 = orgaeff
 mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
 # deviation to pre-reg: all mediators were mean-centred
+mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",modelbt = 1, mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
 
 # repeat without outliers
 mod_orgaeff_nooutliers <- process (data=main1_sub_withoutanyoutliers, y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
@@ -970,6 +971,7 @@ main1_sub_noutliers6 <- main1_sub %>%
 
 med_stereo_lm2_nout <- lm(legit ~ cond + stereo, data = main1_sub_noutliers6)
 summary(med_stereo_lm2_nout) # cond2 now turns significant, the rest remains the same
+confint(med_stereo_lm2_nout)
 
 # robust regression 2
 
@@ -1004,6 +1006,7 @@ main1_sub_noutliers7 <- main1_sub %>%
 
 med_stereo_lm3_nout <- lm(support ~ cond + stereo + legit, data = main1_sub_noutliers7)
 summary(med_stereo_lm3_nout) # cond1 and stereo now turn significant too
+confint(med_stereo_lm3_nout)
 
 # robust regression 3
 
@@ -1011,5 +1014,65 @@ med_stereo_lmrob3 <- lmrob(support ~ cond + stereo + legit, data = main1_sub)
 summary(med_stereo_lmrob3) # no significant or valence changes
 confint(med_stereo_lmrob3)
 
+# run mediation model again without influential cases 
+
+noutliers8 <- c("011", "015", "053", "056", "058", "073", "079","089", "091","110","111", "114", "138", "146", "171", "195","220", "223", "227", "234", "243", "245", "281", "283","289", "296", "330", "335", "357")
+
+main1_sub_noutliers8 <- main1_sub %>%
+  filter(!id %in% noutliers8)
+
+main1_sub_noutliers8 <- main1_sub_noutliers8 %>%
+  mutate(cond = as.numeric(cond))
+
+med_stereo <- process(data = main1_sub_noutliers8, y = "support", x = "cond", m = c("stereo", "legit"), modelbt = 1, mcx = 3, total = 1, model = 6, boot = 10000, seed = 02622)
+
 
 # moderation (orgaeff = M1) ----
+
+helmert = matrix(c(-2/3, 1/3, 1/3, 0, -.5, .5), ncol = 2)
+helmert
+
+main1_sub <- main1_sub %>%
+  mutate(cond = as.factor(cond)) 
+
+contrasts(main1_sub$cond) = helmert
+
+# manually mean-centre selfcat, orgaeff, legit
+
+main1_sub <- main1_sub %>%
+  mutate(cselfcat = scale(selfcat, scale = FALSE),
+         corgaeff = scale(orgaeff, scale = FALSE),
+         clegit = scale(legit, scale = FALSE))
+
+# regression 3 (regression 1 and 2 = the same as above)
+
+mod_orgaeff_lm3 <- lm(support ~ cond + corgaeff + clegit + cselfcat + cond*cselfcat + corgaeff*cselfcat + clegit*cselfcat,  data = main1_sub)
+summary(mod_orgaeff_lm3)
+
+mod_orgaeff_lm3_cooksd <- cooks.distance(mod_orgaeff_lm3)
+
+plot(mod_orgaeff_lm3_cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance") +  # plot cook's distance
+  abline(h = 4*mean(mod_orgaeff_lm3_cooksd, na.rm=T), col="red") + # add cutoff line
+  text(x=1:length(mod_orgaeff_lm3_cooksd)+1, y=mod_orgaeff_lm3_cooksd, labels=ifelse(mod_orgaeff_lm3_cooksd>4*mean(mod_orgaeff_lm3_cooksd, na.rm=T),names(mod_orgaeff_lm3_cooksd),""), col="red")  # add labels
+
+# --> 14 outliers: ID 015, 052, 053, 079, 091, 111, 220, 227, 234, 243, 245, 281, 283, 357
+
+influential <- as.numeric(names(mod_orgaeff_lm3_cooksd)[(mod_orgaeff_lm3_cooksd > 4*mean(mod_orgaeff_lm3_cooksd, na.rm=T))])  # influential row numbers
+head(main1_sub[influential, ], n = 14)  # influential observations.
+
+car::outlierTest(mod_orgaeff_lm3) # most extreme outlier = ID 283 
+
+# run again without outliers 
+
+noutliers9 <- c("015", "052", "053", "079", "091", "111", "220", "227", "234", "243", "245", "281", "283", "357")
+
+main1_sub_noutliers9 <- main1_sub %>%
+  filter(!id %in% noutliers9)
+
+mod_orgaeff_lm3_nout <- lm(support ~ cond + corgaeff + clegit + cselfcat + cond*cselfcat + corgaeff*cselfcat + clegit*cselfcat,  data = main1_sub_noutliers9)
+summary(mod_orgaeff_lm3_nout) # valence changes: cond1 and cond1*cselfcat turn positive, however, not significant
+
+mod_orgaeff_lmrob3 <- lmrob(support ~ cond + corgaeff + clegit + cselfcat + cond*cselfcat + corgaeff*cselfcat + clegit*cselfcat,  data = main1_sub)
+summary(mod_orgaeff_lmrob3) # corgaeff turns negative, however, not signficant
+confint(mod_orgaeff_lmrob3)
+
