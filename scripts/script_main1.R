@@ -770,6 +770,7 @@ mod_orgaeff_nooutliers <- process (data=main1_sub_withoutanyoutliers, y="support
 
 # M1 = stereo
 mod_stereo <- process (data=main1_sub,y="support",x="cond",m= c("stereo", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=28622)
+mod_stereo <- process (data=main1_sub,y="support",x="cond",m= c("stereo", "legit"),w="selfcat",modelbt = 1, mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=28622)
 
 # repeat without outliers
 mod_stereo_nooutliers <- process (data=main1_sub_withoutanyoutliers, y="support",x="cond",m= c("stereo", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=28622)
@@ -1075,4 +1076,60 @@ summary(mod_orgaeff_lm3_nout) # valence changes: cond1 and cond1*cselfcat turn p
 mod_orgaeff_lmrob3 <- lmrob(support ~ cond + corgaeff + clegit + cselfcat + cond*cselfcat + corgaeff*cselfcat + clegit*cselfcat,  data = main1_sub)
 summary(mod_orgaeff_lmrob3) # corgaeff turns negative, however, not signficant
 confint(mod_orgaeff_lmrob3)
+
+# moderation (stereo = M1) ----
+
+helmert = matrix(c(-2/3, 1/3, 1/3, 0, -.5, .5), ncol = 2)
+helmert
+
+main1_sub <- main1_sub %>%
+  mutate(cond = as.factor(cond)) # contrasts requires cond to be a factor 
+
+contrasts(main1_sub$cond) = helmert
+
+# manually mean-centre stereo
+
+main1_sub <- main1_sub %>%
+  mutate(cstereo = scale(stereo, scale = FALSE))
+
+# regression 3 (regression 1 and 2 are the same as above)
+
+mod_stereo_lm3 <- lm(support ~ cond + cstereo + clegit + cselfcat + cond*cselfcat + cstereo*cselfcat + clegit*cselfcat,  data = main1_sub)
+summary(mod_stereo_lm3)
+
+mod_stereo_lm3_cooksd <- cooks.distance(mod_stereo_lm3)
+
+plot(mod_stereo_lm3_cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance") +  # plot cook's distance
+  abline(h = 4*mean(mod_stereo_lm3_cooksd, na.rm=T), col="red") + # add cutoff line
+  text(x=1:length(mod_stereo_lm3_cooksd)+1, y=mod_stereo_lm3_cooksd, labels=ifelse(mod_stereo_lm3_cooksd>4*mean(mod_stereo_lm3_cooksd, na.rm=T),names(mod_stereo_lm3_cooksd),""), col="red")  # add labels
+
+# --> 16 outliers: ID 006, 068, 077, 128, 161, 176, 201, 220, 234, 243, 245, 283, 334, 348, 357, 359
+
+influential <- as.numeric(names(mod_stereo_lm3_cooksd)[(mod_stereo_lm3_cooksd > 4*mean(mod_stereo_lm3_cooksd, na.rm=T))])  # influential row numbers
+head(main1_sub[influential, ], n = 16)  # influential observations.
+
+car::outlierTest(mod_stereo_lm3) # most extreme outlier = ID 283 
+
+# run again without outliers 
+
+noutliers10 <- c("006", "068", "077", "128", "161", "176", "201", "220", "234", "243", "245", "283", "334", "348", "357", "359")
+
+main1_sub_noutliers10 <- main1_sub %>%
+  filter(!id %in% noutliers10)
+
+mod_stereo_lm3_nout <- lm(support ~ cond + cstereo + clegit + cselfcat + cond*cselfcat + cstereo*cselfcat + clegit*cselfcat,  data = main1_sub_noutliers10)
+summary(mod_stereo_lm3_nout) # cond2 marginally sign.; interaction cond1*cselfcat turns negative but n.s.
+
+# robust regression 
+
+mod_stereo_lmrob3 <- lmrob(support ~ cond + cstereo + clegit + cselfcat + cond*cselfcat + cstereo*cselfcat + clegit*cselfcat,  data = main1_sub)
+summary(mod_stereo_lmrob3) # corgaeff turns negative, however, not signficant
+confint(mod_stereo_lmrob3)
+
+# run overall model again without potential influential cases
+
+main1_sub_noutliers10 <- main1_sub_noutliers10 %>%
+  mutate(cond = as.numeric(cond))
+
+mod_stereo <- process (data=main1_sub_noutliers10,y="support",x="cond",m= c("stereo", "legit"),w="selfcat",modelbt = 1, mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=28622)
 
