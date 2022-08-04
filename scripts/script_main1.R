@@ -765,6 +765,7 @@ mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "leg
 # deviation to pre-reg: all mediators were mean-centred
 mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",modelbt = 1, mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
 
+
 # repeat without outliers
 mod_orgaeff_nooutliers <- process (data=main1_sub_withoutanyoutliers, y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
 
@@ -1077,6 +1078,7 @@ mod_orgaeff_lmrob3 <- lmrob(support ~ cond + corgaeff + clegit + cselfcat + cond
 summary(mod_orgaeff_lmrob3) # corgaeff turns negative, however, not signficant
 confint(mod_orgaeff_lmrob3)
 
+
 # moderation (stereo = M1) ----
 
 helmert = matrix(c(-2/3, 1/3, 1/3, 0, -.5, .5), ncol = 2)
@@ -1133,3 +1135,55 @@ main1_sub_noutliers10 <- main1_sub_noutliers10 %>%
 
 mod_stereo <- process (data=main1_sub_noutliers10,y="support",x="cond",m= c("stereo", "legit"),w="selfcat",modelbt = 1, mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=28622)
 
+# plot the interaction (INCOMPLETE)----
+
+# code derived from https://bookdown.org/ajkurz/recoding_Hayes_2018/conditional-process-analysis-with-a-multicategorical-antecedent.html#examining-the-first-stage-of-the-mediation-process.
+
+library(brms)
+
+m1_model <- bf(orgaeff ~ 1 + d1 + d2)
+m2_model <- bf(legit ~ 1 + d1 + d2 + orgaeff)
+y_model <- bf(support ~ 1 + d1+ d2 + orgaeff + legit + selfcat + d1:selfcat + d2:selfcat + orgaeff:selfcat + legit:selfcat)
+
+model<-
+  brm(data = main1_sub, 
+      family = gaussian,
+      c(m1_model + m2_model, y_model),
+      chains = 4, cores = 4)
+
+nd <-
+  tibble(d1 = c(1/3, -2/3, 1/3),
+         d2 = c(1/2, 0, -1/2)) %>% 
+  expand(nesting(d1, d2),
+         selfcat = seq(from = 3.5, to = 6.5, length.out = 30))
+
+f1 <-
+  fitted(model, 
+         newdata = nd,
+         orgaeff = "orgaeff") %>% 
+  as_tibble() %>% 
+  bind_cols(nd) %>% 
+  mutate(cond = ifelse(d2 == 0, "No disruption",
+                       ifelse(d2 == -1/2, "Disruption (no mocking)", "Disruption (mocking)"))) %>% 
+  mutate(cond = factor(cond, levels = c("No disruption", "Disruption (no mocking)", "Disruption (mocking)")))
+
+main1_sub <-
+  main1_sub %>% 
+  mutate(cond = ifelse(cond == 0, "No disruption",
+                       ifelse(cond == 1, "Disruption (no mocking)", "Disruption (mocking)"))) %>% 
+  mutate(cond = factor(cond, levels = c("No disruption", "Disruption (no mocking)", "Disruption (mocking)")))
+
+f1 %>% 
+  ggplot(aes(x = selfcat, group = cond)) +
+  geom_ribbon(aes(ymin = Q2.5, ymax = Q97.5),
+              linetype = 3, color = "white", fill = "transparent") +
+  geom_line(aes(y = Estimate), color = "white") +
+  geom_point(data = main1_sub, aes(x = selfcat, y = support),
+             color = "red", size = 2/3) +
+  coord_cartesian(xlim = 4:6) +
+  labs(x = expression(paste("Identifying as a group member (", italic(W), ")")),
+       y = expression(paste("Organisational efficacy (", italic(M1), ")", 
+                            "Perceived legitimacy (", italic(M2), ")"))) +
+  theme_black() +
+  theme(panel.grid = element_blank()) +
+  facet_wrap(~condition)
