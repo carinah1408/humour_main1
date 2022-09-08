@@ -439,7 +439,7 @@ main_exp2 <- main_exp2 %>% mutate(purpose = ifelse(id ==  "042"| id == "159"| id
 
 
 
-main_exp1 %>% main1_sub # t.test by condition
+main_exp1 %>% # t.test by condition
   group_by(purpose) %>%
   summarise(mean = mean(support), sd = sd(support))
 
@@ -473,6 +473,23 @@ rcorr(as.matrix(main_cor)) %>%
 
 library(apaTables)
 apa.cor.table(main_cor,filename = "Correlation_main1.doc",table.number = 1,show.conf.interval = F)
+
+# correlation with condition
+
+main1_sub_numcond <- main1_sub %>%
+  mutate(cond = as.numeric(cond))
+
+corr_cond_orgaeff <- cor.test(x=main1_sub_numcond$cond, y=main1_sub_numcond$orgaeff, method = 'spearman')
+corr_cond_orgaeff # r = -.49, p < .001 --> experimental conditions (1,2) are associated with lower organisational efficacy
+
+corr_cond_stereo <- cor.test(x=main1_sub_numcond$cond, y=main1_sub_numcond$stereo, method = 'spearman')
+corr_cond_stereo # r = -.39, p < .001
+
+corr_cond_legit <- cor.test(x=main1_sub_numcond$cond, y=main1_sub_numcond$legit, method = 'spearman')
+corr_cond_legit # r = -.18, p < .001 
+
+corr_cond_support <- cor.test(x=main1_sub_numcond$cond, y=main1_sub_numcond$support, method = 'spearman')
+corr_cond_support # r = -.13, p = .01
 
 ### testing homogeneity of variance between conditions----
 
