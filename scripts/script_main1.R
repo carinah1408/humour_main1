@@ -318,6 +318,9 @@ library(vtable)
 st(main1_sub_dsbycond, group = 'cond', group.test = TRUE)
 
 orgaeff_cond <- main1_sub%>% select(cond, orgaeff) %>% plot()
+stereo_cond <- main1_sub%>% select(cond, stereo) %>% plot()
+legit_cond <- main1_sub%>% select(cond, legit) %>% plot()
+support_cond <- main1_sub%>% select(cond, support) %>% plot()
 
 ## univariate outliers inspection by variable----
 
