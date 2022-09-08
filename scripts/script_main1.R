@@ -310,6 +310,15 @@ summary <- main1_sub %>%
     support_sd = sd(support))
 summary
 
+main1_sub_dsbycond <- main1_sub %>%
+  select(cond, selfcat, orgaeff, stereo, legit, support) 
+
+library(vtable)
+
+st(main1_sub_dsbycond, group = 'cond', group.test = TRUE)
+
+orgaeff_cond <- main1_sub%>% select(cond, orgaeff) %>% plot()
+
 ## univariate outliers inspection by variable----
 
 orgaeff_out <- main1_sub$orgaeff
@@ -436,8 +445,6 @@ main_exp1 <- main_exp1 %>% mutate(purpose = ifelse(id ==  "042"| id == "159"| id
 main_exp2 <- main_exp2 %>% mutate(purpose = ifelse(id ==  "042"| id == "159"| id == "163"| id == "313" | id == "339"| id == "354"| id =="357"|
                                                      id == "065"| id == "143"| id == "144"| id == "160"| id =="174"| id == "178"| id == "297"| 
                                                      id == "305", 1, 0)) # no participants from control group
-
-
 
 main_exp1 %>% # t.test by condition
   group_by(purpose) %>%
