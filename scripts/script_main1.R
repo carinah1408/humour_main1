@@ -317,10 +317,13 @@ library(vtable)
 
 st(main1_sub_dsbycond, group = 'cond', group.test = TRUE)
 
-orgaeff_cond <- main1_sub%>% select(cond, orgaeff) %>% plot()
+orgaeff_cond <- main1_sub%>% select(cond, orgaeff) %>% 
+  plot(xlab="Experimental condition", ylab="Organisational Efficacy", sub = "0 = Control; 1 = Disruption (no mocking); 2 = Disruption (mocking)")
 stereo_cond <- main1_sub%>% select(cond, stereo) %>% plot()
-legit_cond <- main1_sub%>% select(cond, legit) %>% plot()
-support_cond <- main1_sub%>% select(cond, support) %>% plot()
+legit_cond <- main1_sub%>% select(cond, legit) %>% 
+  plot(xlab="Experimental condition", ylab="Legitimacy", sub = "0 = Control; 1 = Disruption (no mocking); 2 = Disruption (mocking)")
+support_cond <- main1_sub%>% select(cond, support) %>% 
+  plot(xlab="Experimental condition", ylab="Support intention", sub = "0 = Control; 1 = Disruption (no mocking); 2 = Disruption (mocking)")
 
 ## univariate outliers inspection by variable----
 
