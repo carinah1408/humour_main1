@@ -793,7 +793,7 @@ med_orgaeff_nooutliers <- process(data = main1_sub_withoutanyoutliers, y = "supp
 # M1 = orgaeff
 mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
 # deviation to pre-reg: all mediators were mean-centred
-mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",modelbt = 1, mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
+mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",modelbt = 1, mcx = 3, center = 1,model=89, boot = 10000, plot=1, jn = 1, seed=23622)
 
 
 # repeat without outliers
@@ -1081,6 +1081,17 @@ main1_sub <- main1_sub %>%
 mod_orgaeff_lm3 <- lm(support ~ cond + corgaeff + clegit + cselfcat + cond*cselfcat + corgaeff*cselfcat + clegit*cselfcat,  data = main1_sub)
 summary(mod_orgaeff_lm3)
 
+# visualiation
+
+library(sjPlot)
+library(sjmisc)
+library(ggplot2)
+
+# re-run regression 3 without centring (does not work with plot_model function)
+mod_orgaeff_lm32 <- lm(support ~ cond + orgaeff + legit + selfcat + cond*selfcat + orgaeff*selfcat + legit*selfcat,  data = main1_sub)
+plot_model(mod_orgaeff_lm32, type = "pred", terms = c("legit", "selfcat"), axis.title = c("Perceived legitmacy","Support intention"), legend.title = "Levels of social identificaiton", title = "")
+
+# plotting outliers
 mod_orgaeff_lm3_cooksd <- cooks.distance(mod_orgaeff_lm3)
 
 plot(mod_orgaeff_lm3_cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance") +  # plot cook's distance
