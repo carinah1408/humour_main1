@@ -795,6 +795,28 @@ mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "leg
 # deviation to pre-reg: all mediators were mean-centred
 mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",modelbt = 1, mcx = 3, center = 1,model=89, boot = 10000, plot=1, jn = 1, seed=23622)
 
+# visualiation
+
+# creating dataset for interaction plot
+legit_int <- c(-1.3991, 0.2676, 1.2676, -1.3991, 0.2676, 1.2676, -1.3991, 0.2676, 1.2676)
+selfcat_int <- c(-1.3972, -1.3972, -1.3972, 0.1028, 0.1028, 0.1028, 1.6028, 1.6028, 1.6028)
+support_int <- c(1.7658, 2.6597, 3.1961, 2.1778, 3.4575, 4.2253, 2.5898, 4.2552, 5.2545)
+df$selfcat_int <- factor(x = df$selfcat_int, labels = c("16th percentile", "50th percentile", "84th percentile"))
+df$legit_int <- factor(x = df$legit_int, labels = c("-1SD", "Mean", "+1SD"))
+
+interaction.plot(x.factor = df$legit_int, 
+                 trace.factor = df$selfcat_int,
+                 response = df$support_int,
+                 fun = median,
+                 legend = T,
+                 ylab = "Support intention",
+                 xlab = "Perceived legitimacy",
+                 trace.label = "Self-categorisation",
+                 col = c("blue", "red", "green"),
+                 lyt = 1,
+                 lwd = 3,
+                 xleg = 
+)
 
 # repeat without outliers
 mod_orgaeff_nooutliers <- process (data=main1_sub_withoutanyoutliers, y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
@@ -1080,16 +1102,6 @@ main1_sub <- main1_sub %>%
 
 mod_orgaeff_lm3 <- lm(support ~ cond + corgaeff + clegit + cselfcat + cond*cselfcat + corgaeff*cselfcat + clegit*cselfcat,  data = main1_sub)
 summary(mod_orgaeff_lm3)
-
-# visualiation
-
-library(sjPlot)
-library(sjmisc)
-library(ggplot2)
-
-# re-run regression 3 without centring (does not work with plot_model function)
-mod_orgaeff_lm32 <- lm(support ~ cond + orgaeff + legit + selfcat + cond*selfcat + orgaeff*selfcat + legit*selfcat,  data = main1_sub)
-plot_model(mod_orgaeff_lm32, type = "pred", terms = c("legit", "selfcat"), axis.title = c("Perceived legitmacy","Support intention"), legend.title = "Levels of social identificaiton", title = "")
 
 # plotting outliers
 mod_orgaeff_lm3_cooksd <- cooks.distance(mod_orgaeff_lm3)
