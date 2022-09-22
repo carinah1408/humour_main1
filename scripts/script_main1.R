@@ -817,8 +817,7 @@ interaction.plot(x.factor = df$legit_int,
                  trace.label = "Self-categorisation",
                  col = c("blue", "red", "green"),
                  lyt = 1,
-                 lwd = 3,
-                 xleg = 
+                 lwd = 3
 )
 
 # repeat without outliers
