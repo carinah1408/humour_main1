@@ -801,6 +801,9 @@ mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "leg
 legit_int <- c(-1.3991, 0.2676, 1.2676, -1.3991, 0.2676, 1.2676, -1.3991, 0.2676, 1.2676)
 selfcat_int <- c(-1.3972, -1.3972, -1.3972, 0.1028, 0.1028, 0.1028, 1.6028, 1.6028, 1.6028)
 support_int <- c(1.7658, 2.6597, 3.1961, 2.1778, 3.4575, 4.2253, 2.5898, 4.2552, 5.2545)
+
+df <- data.frame(legit_int, selfcat_int, support_int)
+
 df$selfcat_int <- factor(x = df$selfcat_int, labels = c("16th percentile", "50th percentile", "84th percentile"))
 df$legit_int <- factor(x = df$legit_int, labels = c("-1SD", "Mean", "+1SD"))
 
