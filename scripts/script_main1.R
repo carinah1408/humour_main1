@@ -895,6 +895,12 @@ confint(med_orgaeff_lmrob1)
 med_orgaeff_lm2 <- lm(legit ~ cond + orgaeff, data = main1_sub)
 summary(med_orgaeff_lm2)
 
+# inspecting multicolinearity (vif, condition index and correlation)
+library(olsrr)
+ols_vif_tol(med_orgaeff_lm2)
+ols_eigen_cindex(med_orgaeff_lm2)
+ols_correlations(med_orgaeff_lm2)
+
 med_orgaeff_lm2_cooksd <- cooks.distance(med_orgaeff_lm2)
 
 plot(med_orgaeff_lm2_cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance") +  # plot cook's distance
@@ -918,6 +924,9 @@ main1_sub_noutliers2 <- main1_sub %>%
 med_orgaeff_lm2_nout <- lm(legit ~ cond + orgaeff, data = main1_sub_noutliers2)
 summary(med_orgaeff_lm2_nout) # no significant or valence changes
 
+
+
+
 # robust regression 2
 med_orgaeff_lmrob2 <- lmrob(legit ~ cond + orgaeff, data = main1_sub)
 summary(med_orgaeff_lmrob2) # no significant or valence changes
@@ -926,12 +935,6 @@ confint(med_orgaeff_lmrob2)
 # regression 3
 med_orgaeff_lm3 <- lm(support ~ cond + orgaeff + legit, data = main1_sub)
 summary(med_orgaeff_lm3)
-
-# inspecting multicolinearity and condition index
-library(klaR)
-vif(med_orgaeff_lm3)
-cond.index(support ~ cond + orgaeff + legit, data = main1_sub)
-
 
 med_orgaeff_lm3_cooksd <- cooks.distance(med_orgaeff_lm3)
 
