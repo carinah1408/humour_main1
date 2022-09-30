@@ -98,6 +98,18 @@ plot(eff_1.aov, 2) # checking normality: normality seems violated, therefore, no
 
 kruskal.test(eff_check1 ~ cond, data = main1_sub)
 
+# increase decimals in output (code from https://stat.ethz.ch/pipermail/r-help/2015-February/426229.html)
+print.pairwise.htest <- function (x, digits = 5, ...)
+{
+  cat("\n\tPairwise comparisons using", x$method, "\n\n")
+  cat("data: ", x$data.name, "\n\n")
+  pp <- format.pval(x$p.value, digits, na.form = "-")
+  attributes(pp) <- attributes(x$p.value)
+  print(pp, quote = FALSE, ...)
+  cat("\nP value adjustment method:", x$p.adjust.method, "\n")
+  invisible(x)
+}
+
 eff_1.pairwise.wilcox.test <- pairwise.wilcox.test(main1_sub$eff_check1, main1_sub$cond,
                      p.adjust.method = "BH", conf.int = TRUE) # pairwise comparison (non-parametric)
 eff_1.pairwise.wilcox.test
