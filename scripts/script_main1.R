@@ -416,9 +416,11 @@ t.test(main1_sub_comp_exp$legit ~ main1_sub_comp_exp$cond) # n.s.
 t.test(main1_sub_comp_exp$support ~ main1_sub_comp_exp$cond) # p = .05
 
 ## comparison variables between conditions
+library(effectsize)
 
 orgaeff.aov <- aov(orgaeff ~ cond, data = main1_sub) # sign.
 summary(orgaeff.aov)
+eta_squared(orgaeff.aov, partial = TRUE)
 TukeyHSD(orgaeff.aov) # sign. between exp and control but not between exp
 
 leveneTest(orgaeff ~ cond, data = main1_sub) # sign, using Welch test instead
@@ -431,6 +433,7 @@ orgaeff.pairwise.t.test # sign. between control and exp
 
 legit.aov <- aov(legit ~ cond, data = main1_sub)
 summary(legit.aov)
+eta_squared(legit.aov, partial = TRUE)
 TukeyHSD(legit.aov) # sign between exp2 and control
 
 leveneTest(legit ~ cond, data = main1_sub) # n.s.
@@ -438,6 +441,7 @@ leveneTest(legit ~ cond, data = main1_sub) # n.s.
 
 support.aov <- aov(support ~ cond, data = main1_sub)
 summary(support.aov)
+eta_squared(support.aov, partial = TRUE)
 TukeyHSD(support.aov) # sign between exp2 and control
 
 leveneTest(support ~ cond, data = main1_sub) # n.s.
@@ -803,21 +807,23 @@ med_orgaeff_nooutliers <- process(data = main1_sub_withoutanyoutliers, y = "supp
 ## moderated mediation
 
 # M1 = orgaeff
-mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
+#OLD mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
 # deviation to pre-reg: all mediators were mean-centred
-mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",modelbt = 1, mcx = 3, center = 1,model=89, boot = 10000, plot=1, jn = 1, seed=23622)
+#OLD mod_orgaeff <- process (data=main1_sub,y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",modelbt = 1, mcx = 3, center = 1,model=89, boot = 10000, plot=1, jn = 1, seed=23622)
+#NEW
+process(data = main1_sub, y = "support", x = "cond", m = c("orgaeff", "legit"), w = "selfcat", modelbt = 1, mcx = 3, center = 2, model = 89, moments = 1, plot = 1, jn = 1, boot = 10000, seed = 311022)
 
 # visualiation
 
 # creating dataset for interaction plot
-legit_int <- c(-1.3991, 0.2676, 1.2676, -1.3991, 0.2676, 1.2676, -1.3991, 0.2676, 1.2676)
-selfcat_int <- c(-1.3972, -1.3972, -1.3972, 0.1028, 0.1028, 0.1028, 1.6028, 1.6028, 1.6028)
-support_int <- c(1.7658, 2.6597, 3.1961, 2.1778, 3.4575, 4.2253, 2.5898, 4.2552, 5.2545)
+legit_int <- c(-1.2746, 0.0000, 1.2746, -1.2746, 0.0000, 1.2746, -1.2746, 0.0000, 1.2746)
+selfcat_int <- c(-1.2619, -1.2619, -1.2619 , 0.0000, 0.0000, 0.0000, 1.2619, 1.2619, 1.2619)
+support_int <- c(1.8724, 2.5826, 3.2928, 2.2432, 3.2016, 4.1600, 2.6140, 3.8206, 5.0273)
 
 df <- data.frame(legit_int, selfcat_int, support_int)
 
-df$selfcat_int <- factor(x = df$selfcat_int, labels = c("16th percentile", "50th percentile", "84th percentile"))
-df$legit_int <- factor(x = df$legit_int, labels = c("-1SD", "Mean", "+1SD"))
+df$selfcat_int <- factor(x = df$selfcat_int, labels = c("-1SD", "Mean", "+1SD"))
+df$legit_int <- factor(x = df$legit_int)
 
 interaction.plot(x.factor = df$legit_int, 
                  trace.factor = df$selfcat_int,
@@ -826,11 +832,12 @@ interaction.plot(x.factor = df$legit_int,
                  legend = T,
                  ylab = "Support intention",
                  xlab = "Perceived legitimacy",
-                 trace.label = "Self-categorisation",
+                 trace.label = "Social identification",
                  col = c("blue", "red", "green"),
                  lyt = 1,
                  lwd = 3
 )
+
 
 # repeat without outliers
 mod_orgaeff_nooutliers <- process (data=main1_sub_withoutanyoutliers, y="support",x="cond",m= c("orgaeff", "legit"),w="selfcat",mcx = 3, center = 1,model=89, boot = 10000, plot=1, seed=23622)
